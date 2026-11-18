@@ -11,6 +11,24 @@
 //   Edit `content` (or use project-editor.html) — not these two.
 window.PROJECTS = {
 
+  'dae-catalogue': {
+    title: 'Design Academy Eindhoven Catalogue 2026',
+    meta: ['Dutch Design Week 2026', 'In collaboration with Sonia Górecka', '2026'],
+    content: [
+      { text: 'As alumni of the Bachelor’s and Master’s programmes ourselves, we tried to capture a flavour of the weird totality of being a student. Each graduate creates their own story, assembling a small world of references and associations.\n\nThe design draws inspiration from the long tradition of turning stories into books and the centuries-old craft of bookmaking. We repeatedly returned to the book as an object and an artefact: passed from hand to hand, carried around, misplaced, found again.\n\nThe book features five ribbon bookmarks; brief 45-degree annotations in the corners of pages, referencing the habit of folding the corner of a page to mark something special; and a series of digitally designed ornaments that reference classical book ornaments.' },
+      'img/dae_7.jpg',
+      'img/dae_4.jpg',
+      'img/dae_1.jpg',
+    ],
+    // generated from content:
+    body: 'As alumni of the Bachelor’s and Master’s programmes ourselves, we tried to capture a flavour of the weird totality of being a student. Each graduate creates their own story, assembling a small world of references and associations.\n\nThe design draws inspiration from the long tradition of turning stories into books and the centuries-old craft of bookmaking. We repeatedly returned to the book as an object and an artefact: passed from hand to hand, carried around, misplaced, found again.\n\nThe book features five ribbon bookmarks; brief 45-degree annotations in the corners of pages, referencing the habit of folding the corner of a page to mark something special; and a series of digitally designed ornaments that reference classical book ornaments.',
+    images: [
+      'img/dae_7.jpg',
+      'img/dae_4.jpg',
+      'img/dae_1.jpg',
+    ],
+  },
+
   'viewing-conditions': {
     title: 'Viewing Conditions',
     meta: ['Nieuwe Instituut, Rotterdam', 'In collaboration with Sonia Górecka', '2026'],
@@ -21,17 +39,15 @@ window.PROJECTS = {
       'img/viewingconditions_8.jpg',
       'img/viewingconditions_13.jpg',
       'img/viewingconditions_10.jpg',
-      'img/viewingconditions_12.jpg',
-      { text: '"Viewing Conditions" was developed together with Sonia Górecka during Nieuwe Instituut\'s -1 residency in spring 2026. It is part of "22.86 × 11.43 × 11.43", a larger initiative by the two artists investigating the relation between image production and earth extraction. You can read more about the project <a href="https://22x11x11.info">here</a>.' },
+      { text: '"Viewing Conditions" was developed during Nieuwe Instituut\'s -1 residency in spring 2026. It is part of "22.86 × 11.43 × 11.43", a larger initiative by the two artists investigating the relation between image production and earth extraction. You can read more about the project <a href="https://22x11x11.info">here</a>.' },
     ],
     related: ['22x11x11'],
     // generated from content:
-    body: 'Quartz, Plagioclase, Orthoclase, Pyroxene, and Biotite. Granite is described as solid, resistant, and enduring, yet each crystal preserves a history of deformation through cooling, weathering, tectonic pressure, and time. The microscope does not return the stone, but artificially constructs one of its many possible images.\n\n"Viewing Conditions" is a video installation deconstructing the history of an erratic stone located in the north-western Italian Alps through one of its few surviving fragments. Once a natural landmark and spiritual site, the boulder was gradually dismantled over the last century for the extraction of its valuable pink granite. Today, only its name on maps, fragments from the cutting process, and traces within local memory remain.\n\nMicroscopic images examine the granite at a crystalline scale. The work reflects on the parallel between cutting stone for extraction and cutting it for observation, considering seeing and measuring as preconditions for different forms of value production. While one produces material value and the other scientific knowledge, both transform the stone through acts of division. Rather than recovering the lost landmark, "Viewing Conditions" proposes another image of it, treating the stone as an optical interface through which its hidden structures become visible.\n\n"Viewing Conditions" was developed together with Sonia Górecka during Nieuwe Instituut\'s -1 residency in spring 2026. It is part of "22.86 × 11.43 × 11.43", a larger initiative by the two artists investigating the relation between image production and earth extraction. You can read more about the project <a href="https://22x11x11.info">here</a>.',
+    body: 'Quartz, Plagioclase, Orthoclase, Pyroxene, and Biotite. Granite is described as solid, resistant, and enduring, yet each crystal preserves a history of deformation through cooling, weathering, tectonic pressure, and time. The microscope does not return the stone, but artificially constructs one of its many possible images.\n\n"Viewing Conditions" is a video installation deconstructing the history of an erratic stone located in the north-western Italian Alps through one of its few surviving fragments. Once a natural landmark and spiritual site, the boulder was gradually dismantled over the last century for the extraction of its valuable pink granite. Today, only its name on maps, fragments from the cutting process, and traces within local memory remain.\n\nMicroscopic images examine the granite at a crystalline scale. The work reflects on the parallel between cutting stone for extraction and cutting it for observation, considering seeing and measuring as preconditions for different forms of value production. While one produces material value and the other scientific knowledge, both transform the stone through acts of division. Rather than recovering the lost landmark, "Viewing Conditions" proposes another image of it, treating the stone as an optical interface through which its hidden structures become visible.\n\n"Viewing Conditions" was developed during Nieuwe Instituut\'s -1 residency in spring 2026. It is part of "22.86 × 11.43 × 11.43", a larger initiative by the two artists investigating the relation between image production and earth extraction. You can read more about the project <a href="https://22x11x11.info">here</a>.',
     images: [
       'img/viewingconditions_8.jpg',
       'img/viewingconditions_13.jpg',
       'img/viewingconditions_10.jpg',
-      'img/viewingconditions_12.jpg',
     ],
   },
 
@@ -60,18 +76,18 @@ window.PROJECTS = {
     title: 'A great place for a ride',
     meta: ['2023'],
     content: [
-      { text: 'Miguel, a fictional motorbike enthusiast born and raised near the forest of Leiria in Portugal, shares his personal knowledge of the place while riding his quad bike among the trees. His knowledge is pieced together from Google Maps users\' comments and an offline interview.' },
+      { text: 'Miguel, a fictional local motorbike enthusiast, shares his personal knowledge of the forest of Leiria in Portugal while riding his quad bike among the trees. His knowledge is pieced together from Google Maps users\' comments and an offline interview.' },
       { text: 'Generally known for its beauty, its unspoilt nature, and as a place for leisure, the national forest of Leiria hides, between the lines of Miguel\'s personal story, traces of a lucrative and artificial past. His account is built around three recurring themes, which take shape in three chapters: [the sand-the greatness] the origin of the forest, planted by the king to defend the inland countryside and its people; [the fires-the beauty] the fires of today, for Miguel a dramatic but obvious consequence of corrupt politics; [the wood-the pride] the wood and its use throughout history in building caravels. Together, these narratives make the forest a national pride to defend, yet today, for Miguel, it is just a playground for his rides.\nWhat Miguel tells are simplified stories drawn from popular and oral narratives that sometimes clash with one another: the greatness of a past king, the golden age of the country\'s discoveries, and the pure nature of the forest. These themes show a familiar overlap between political propaganda, greatness, and natural beauty. In the end, Miguel\'s own gesture, riding his quad, unveils the present state of the forest and how it is ultimately perceived: just a great place for a ride.' },
       'img/Agreat_1.jpg',
       'img/Agreat_2.jpg',
-      { src: 'img/Agreat_3.jpg', caption: 'Still from "A great place for a ride", (2023).' },
+      { src: 'img/Agreat_3.jpg', caption: 'Still from "A great place for a ride" (2023).' },
     ],
     // generated from content:
-    body: 'Miguel, a fictional motorbike enthusiast born and raised near the forest of Leiria in Portugal, shares his personal knowledge of the place while riding his quad bike among the trees. His knowledge is pieced together from Google Maps users\' comments and an offline interview.\n\nGenerally known for its beauty, its unspoilt nature, and as a place for leisure, the national forest of Leiria hides, between the lines of Miguel\'s personal story, traces of a lucrative and artificial past. His account is built around three recurring themes, which take shape in three chapters: [the sand-the greatness] the origin of the forest, planted by the king to defend the inland countryside and its people; [the fires-the beauty] the fires of today, for Miguel a dramatic but obvious consequence of corrupt politics; [the wood-the pride] the wood and its use throughout history in building caravels. Together, these narratives make the forest a national pride to defend, yet today, for Miguel, it is just a playground for his rides.\nWhat Miguel tells are simplified stories drawn from popular and oral narratives that sometimes clash with one another: the greatness of a past king, the golden age of the country\'s discoveries, and the pure nature of the forest. These themes show a familiar overlap between political propaganda, greatness, and natural beauty. In the end, Miguel\'s own gesture, riding his quad, unveils the present state of the forest and how it is ultimately perceived: just a great place for a ride.',
+    body: 'Miguel, a fictional local motorbike enthusiast, shares his personal knowledge of the forest of Leiria in Portugal while riding his quad bike among the trees. His knowledge is pieced together from Google Maps users\' comments and an offline interview.\n\nGenerally known for its beauty, its unspoilt nature, and as a place for leisure, the national forest of Leiria hides, between the lines of Miguel\'s personal story, traces of a lucrative and artificial past. His account is built around three recurring themes, which take shape in three chapters: [the sand-the greatness] the origin of the forest, planted by the king to defend the inland countryside and its people; [the fires-the beauty] the fires of today, for Miguel a dramatic but obvious consequence of corrupt politics; [the wood-the pride] the wood and its use throughout history in building caravels. Together, these narratives make the forest a national pride to defend, yet today, for Miguel, it is just a playground for his rides.\nWhat Miguel tells are simplified stories drawn from popular and oral narratives that sometimes clash with one another: the greatness of a past king, the golden age of the country\'s discoveries, and the pure nature of the forest. These themes show a familiar overlap between political propaganda, greatness, and natural beauty. In the end, Miguel\'s own gesture, riding his quad, unveils the present state of the forest and how it is ultimately perceived: just a great place for a ride.',
     images: [
       'img/Agreat_1.jpg',
       'img/Agreat_2.jpg',
-      { src: 'img/Agreat_3.jpg', caption: 'Still from "A great place for a ride", (2023).' },
+      { src: 'img/Agreat_3.jpg', caption: 'Still from "A great place for a ride" (2023).' },
     ],
   },
 
@@ -86,34 +102,21 @@ window.PROJECTS = {
       'img/ppv_5.jpg',
       'img/w2.jpeg',
       'img/w1.jpeg',
-      { text: 'Photographs collection:' },
-      'img/w8.jpeg',
-      'img/w9.jpeg',
-      'img/w7.jpeg',
-      'img/w6.jpeg',
-      'img/w5.jpeg',
-      'img/w4.jpeg',
     ],
     // generated from content:
-    body: '"Perfect-Perfect-View" is a site-specific installation on the street-facing window of the exhibition space Oud House in Rotterdam, made with a familiar yet overlooked material: masking tape. The work focuses on the gestures of covering, layering, measuring, and cutting. These actions result in a visual composition that suggests ambiguity: is the space under renovation? Decorated? Partially covered from view? Or used as an interface?\n\nThe work grew out of a personal fascination with the windows of Rotterdam West, which Matteo Bettini began photographing and collecting. There, tape often appears holding up a temporary cellophane curtain, binding a cracked pane, or simply left behind after renovation. In its humble material presence, tape speaks of urban transformation, conflict, and the temporariness of the housing system: a continuous process of holding space in place, provisionally.\n\nPhotographs collection:',
+    body: '"Perfect-Perfect-View" is a site-specific installation on the street-facing window of the exhibition space Oud House in Rotterdam, made with a familiar yet overlooked material: masking tape. The work focuses on the gestures of covering, layering, measuring, and cutting. These actions result in a visual composition that suggests ambiguity: is the space under renovation? Decorated? Partially covered from view? Or used as an interface?\n\nThe work grew out of a personal fascination with the windows of Rotterdam West, which Matteo Bettini began photographing and collecting. There, tape often appears holding up a temporary cellophane curtain, binding a cracked pane, or simply left behind after renovation. In its humble material presence, tape speaks of urban transformation, conflict, and the temporariness of the housing system: a continuous process of holding space in place, provisionally.',
     images: [
       'img/ppv_1.jpg',
       'img/ppv_3.jpg',
       'img/ppv_5.jpg',
       'img/w2.jpeg',
       'img/w1.jpeg',
-      'img/w8.jpeg',
-      'img/w9.jpeg',
-      'img/w7.jpeg',
-      'img/w6.jpeg',
-      'img/w5.jpeg',
-      'img/w4.jpeg',
     ],
   },
 
   '22x11x11': {
     title: '22.86 × 11.43 × 11.43',
-    meta: ['In collaboration with Sonia Górecka', '2023-ongoing'],
+    meta: ['In collaboration with Sonia Górecka', '2023–ongoing'],
     content: [
       { text: '"22.86 × 11.43 × 11.43" is an artistic dialogue between Matteo Bettini and Sonia Górecka, ongoing since 2023, reconstructing and exploring the history of a vanished stone at the foot of Mottarone in the western Italian Alps.' },
       { text: 'Once a natural landmark and sacred place, the massive stone, measured around 1889 at 22.86 metres wide, 11.43 metres deep, and 11.43 metres high, was gradually dismantled over the course of the last century for the extraction of the precious pink granite from which it was made. Today, all that remains is its name on the map, fragments left from the cutting process, and a void in the collective memory.\nThe stone in question was not just any rock, but an erratic boulder, a "wandering" stone. These enormous formations differ from the terrain on which they rest, evidence of their displacement across vast distances over time. Before the development of modern geology, their origins remained unexplained, inspiring myths and stories among those who encountered them.\nLocated in the strip of land between Lake Orta and Lake Maggiore, the place where the boulder once stood lies only a few kilometres from Baveno and Montorfano, historic granite quarrying centres that experienced rapid tourism development from the late nineteenth century onwards. The story of this boulder exemplifies the changing meaning of landscape: from an unknown place of imagination to a measurable space with extractable value.\nBettini and Górecka\'s first encounter with the boulder was informal, almost accidental, born from a cartographic misunderstanding: when a name on a map does not correspond to what it promises to reveal. The project website acts as a trace of the research, opening possibilities for connection, shared reflection, and artistic exchange with others.' },
@@ -149,6 +152,7 @@ window.PROJECTS = {
       'img/dem2_screen_5.jpg',
       'img/dem2_screen_6.jpg',
       'img/dem2_3.jpg',
+      'img/DEM_10.jpg',
       { text: '"Fragments of Democracy II" was made at the invitation of Vera Sacchetti for the group exhibition "Where To From Here?" in Turin (IT). It is the second iteration of an ongoing line of research into democracies, information, and their image production, developed together with Studio Folder.' },
     ],
     related: ['fragments-democracy'],
@@ -162,6 +166,7 @@ window.PROJECTS = {
       'img/dem2_screen_5.jpg',
       'img/dem2_screen_6.jpg',
       'img/dem2_3.jpg',
+      'img/DEM_10.jpg',
     ],
   },
 
@@ -169,15 +174,15 @@ window.PROJECTS = {
     title: 'Fragments of Democracy I',
     meta: ['Bundeskunsthalle, Bonn', 'In collaboration with Studio Folder', '2024'],
     content: [
-      { text: 'For as long as we\'ve had politics, we\'ve reached for nature to picture it: growth, climate, erosion standing in for the virtues, the progress, and lately the fragility of democratic life. In "Fragments of Democracy I", thirteen data sculptures take that habit literally. Hundreds of open-source datasets, political, historical, climatic, are laid over raw materials and left to act on them: information that erodes, sediments, deposits, encrusts. The words are borrowed from geology, but they are the same ones we use for democracies in crisis, and that overlap is the point.\nThe pieces read at once as fragments dug up from a distant past and as artefacts of a near future. With their accompanying texts, they ask what information does inside a democracy, how institutions hold, or fail to hold, to transparency. They speak two languages at once, the abstract image and the exact data visualisation, and hold them together to make a quieter claim: that no statistic, census, or survey, the instruments by which public life is measured, means anything until it is placed in context and read.' },
+      { text: 'For as long as we\'ve had politics, we\'ve reached for nature to picture it: growth, climate, erosion standing in for the virtues, the progress, and lately the fragility of democratic life. In "Fragments of Democracy I", thirteen data sculptures take that habit literally. Hundreds of open-source datasets – political, historical, climatic – are laid over raw materials and left to act on them: information that erodes, sediments, deposits, encrusts. The words are borrowed from geology, but they are the same ones we use for democracies in crisis, and that overlap is the point.\nThe pieces read at once as fragments dug up from a distant past and as artefacts of a near future. With their accompanying texts, they ask what information does inside a democracy, how institutions hold, or fail to hold, to transparency. They speak two languages at once, the abstract image and the exact data visualisation, and hold them together to make a quieter claim: that no statistic, census, or survey, the instruments by which public life is measured, means anything until it is placed in context and read.' },
       'img/FragmentsofDemocracy_2.jpg',
       'img/FragmentsofDemocracy_3.jpg',
       'img/FragmentsofDemocracy_4.jpg',
-      { text: '"Fragments of Democracy I" was exhibited in "All in! Re-Designing Democracy" at the Bundeskunsthalle, Bonn (DE), in 2024, and at the International Design Biennale of Rotterdam (NL) in 2026. It is the first iteration of an ongoing line of research into democracies, information, and their image production, developed together with Studio Folder.' },
+      { text: '"Fragments of Democracy I" was exhibited in "All in! Re-Designing Democracy" at the Bundeskunsthalle, Bonn (DE), in 2024, and in "Systems of Support" at the <a href="https://iabr.nl/en">International Architecture Biennale Rotterdam (IABR)</a> (NL) in 2026. It is the first iteration of an ongoing line of research into democracies, information, and their image production, developed together with Studio Folder.' },
     ],
     related: ['where-to'],
     // generated from content:
-    body: 'For as long as we\'ve had politics, we\'ve reached for nature to picture it: growth, climate, erosion standing in for the virtues, the progress, and lately the fragility of democratic life. In "Fragments of Democracy I", thirteen data sculptures take that habit literally. Hundreds of open-source datasets, political, historical, climatic, are laid over raw materials and left to act on them: information that erodes, sediments, deposits, encrusts. The words are borrowed from geology, but they are the same ones we use for democracies in crisis, and that overlap is the point.\nThe pieces read at once as fragments dug up from a distant past and as artefacts of a near future. With their accompanying texts, they ask what information does inside a democracy, how institutions hold, or fail to hold, to transparency. They speak two languages at once, the abstract image and the exact data visualisation, and hold them together to make a quieter claim: that no statistic, census, or survey, the instruments by which public life is measured, means anything until it is placed in context and read.\n\n"Fragments of Democracy I" was exhibited in "All in! Re-Designing Democracy" at the Bundeskunsthalle, Bonn (DE), in 2024, and at the International Design Biennale of Rotterdam (NL) in 2026. It is the first iteration of an ongoing line of research into democracies, information, and their image production, developed together with Studio Folder.',
+    body: 'For as long as we\'ve had politics, we\'ve reached for nature to picture it: growth, climate, erosion standing in for the virtues, the progress, and lately the fragility of democratic life. In "Fragments of Democracy I", thirteen data sculptures take that habit literally. Hundreds of open-source datasets – political, historical, climatic – are laid over raw materials and left to act on them: information that erodes, sediments, deposits, encrusts. The words are borrowed from geology, but they are the same ones we use for democracies in crisis, and that overlap is the point.\nThe pieces read at once as fragments dug up from a distant past and as artefacts of a near future. With their accompanying texts, they ask what information does inside a democracy, how institutions hold, or fail to hold, to transparency. They speak two languages at once, the abstract image and the exact data visualisation, and hold them together to make a quieter claim: that no statistic, census, or survey, the instruments by which public life is measured, means anything until it is placed in context and read.\n\n"Fragments of Democracy I" was exhibited in "All in! Re-Designing Democracy" at the Bundeskunsthalle, Bonn (DE), in 2024, and in "Systems of Support" at the <a href="https://iabr.nl/en">International Architecture Biennale Rotterdam (IABR)</a> (NL) in 2026. It is the first iteration of an ongoing line of research into democracies, information, and their image production, developed together with Studio Folder.',
     images: [
       'img/FragmentsofDemocracy_2.jpg',
       'img/FragmentsofDemocracy_3.jpg',
@@ -190,7 +195,7 @@ window.PROJECTS = {
     meta: ['2023–now'],
     content: [
       { text: 'A pipeline can move a country\'s energy for half a century and still go unseen. Eni\'s trans-European gas line is one such case: heavily publicised once, long since forgotten, yet never switched off. "The Gas Route" returns it to view by reading the story its own maps once told.' },
-      { text: 'Across decades of publications, reports, and promotional material, the Italian oil and gas company mapped this line again and again, and when collected together these maps and diagrams tell a story drawn rather than written, one in which clean routes cross borders in a single stroke and the terrain thins into a background the line simply passes over. Like any story it is shaped as much by what it leaves out as by what it shows, so that each map becomes a record of its moment: a way of picturing energy, and of deciding what a map should ignore. That same selective gesture is what lets infrastructure of this scale slip out of public sight, until the documents themselves grow hard to find, rarely archived and visually interchangeable, the drawing fading along with the thing it drew. Set side by side, the maps trace not a route but a plot, a shifting account of what deserves to be seen, and of how cartography quietly decides it.' },
+      { text: 'Across decades of publications, reports, and promotional material, the Italian oil and gas company mapped this line again and again, and when collected together these maps and diagrams tell a story drawn rather than written, one in which clean routes cross borders in a single stroke and the terrain thins into a background the line simply passes over. Like any story, it is shaped as much by what it leaves out as by what it shows, so that each map becomes a record of its moment: a way of picturing energy, and of deciding what a map should ignore. That same selective gesture is what lets infrastructure of this scale slip out of public sight, until the documents themselves grow hard to find, rarely archived and visually interchangeable, the drawing fading along with the thing it drew. Set side by side, the maps trace not a route but a plot, a shifting account of what deserves to be seen, and of how cartography quietly decides it.' },
       'img/TheGasRoute_7.png',
       'img/Scan 2.jpeg',
       'img/TheGasRoute_5.jpg',
@@ -200,7 +205,7 @@ window.PROJECTS = {
     ],
     related: ['shadow-circuits', 'ilsignore'],
     // generated from content:
-    body: 'A pipeline can move a country\'s energy for half a century and still go unseen. Eni\'s trans-European gas line is one such case: heavily publicised once, long since forgotten, yet never switched off. "The Gas Route" returns it to view by reading the story its own maps once told.\n\nAcross decades of publications, reports, and promotional material, the Italian oil and gas company mapped this line again and again, and when collected together these maps and diagrams tell a story drawn rather than written, one in which clean routes cross borders in a single stroke and the terrain thins into a background the line simply passes over. Like any story it is shaped as much by what it leaves out as by what it shows, so that each map becomes a record of its moment: a way of picturing energy, and of deciding what a map should ignore. That same selective gesture is what lets infrastructure of this scale slip out of public sight, until the documents themselves grow hard to find, rarely archived and visually interchangeable, the drawing fading along with the thing it drew. Set side by side, the maps trace not a route but a plot, a shifting account of what deserves to be seen, and of how cartography quietly decides it.\n\n"The Gas Route" was written, designed, and first printed in July 2023, then reprinted in March 2024.',
+    body: 'A pipeline can move a country\'s energy for half a century and still go unseen. Eni\'s trans-European gas line is one such case: heavily publicised once, long since forgotten, yet never switched off. "The Gas Route" returns it to view by reading the story its own maps once told.\n\nAcross decades of publications, reports, and promotional material, the Italian oil and gas company mapped this line again and again, and when collected together these maps and diagrams tell a story drawn rather than written, one in which clean routes cross borders in a single stroke and the terrain thins into a background the line simply passes over. Like any story, it is shaped as much by what it leaves out as by what it shows, so that each map becomes a record of its moment: a way of picturing energy, and of deciding what a map should ignore. That same selective gesture is what lets infrastructure of this scale slip out of public sight, until the documents themselves grow hard to find, rarely archived and visually interchangeable, the drawing fading along with the thing it drew. Set side by side, the maps trace not a route but a plot, a shifting account of what deserves to be seen, and of how cartography quietly decides it.\n\n"The Gas Route" was written, designed, and first printed in July 2023, then reprinted in March 2024.',
     images: [
       'img/TheGasRoute_7.png',
       'img/Scan 2.jpeg',
@@ -214,24 +219,14 @@ window.PROJECTS = {
     title: 'Il signore che viene da lontano',
     meta: ['2023'],
     content: [
-      'img/video-travel/1.jpg',
       'img/video-travel/2.jpg',
-      'img/video-travel/3.jpg',
-      'img/video-travel/4.jpg',
       'img/video-travel/8.jpg',
       'img/video-travel/9.jpg',
       'img/video-travel/10.jpg',
-      'img/video-travel/12.jpg',
-      'img/video-travel/14.jpg',
       'img/video-travel/15.jpg',
-      'img/video-travel/16.jpg',
       'img/video-travel/17.jpg',
       'img/video-travel/19.jpg',
       'img/video-travel/20.jpg',
-      'img/video-travel/21.jpg',
-      'img/video-travel/23.jpg',
-      'img/video-travel/24.jpg',
-      'img/video-travel/26.jpg',
       'img/video-travel/27.jpg',
       'img/video-travel/28.jpg',
     ],
@@ -239,24 +234,14 @@ window.PROJECTS = {
     // generated from content:
     body: '',
     images: [
-      'img/video-travel/1.jpg',
       'img/video-travel/2.jpg',
-      'img/video-travel/3.jpg',
-      'img/video-travel/4.jpg',
       'img/video-travel/8.jpg',
       'img/video-travel/9.jpg',
       'img/video-travel/10.jpg',
-      'img/video-travel/12.jpg',
-      'img/video-travel/14.jpg',
       'img/video-travel/15.jpg',
-      'img/video-travel/16.jpg',
       'img/video-travel/17.jpg',
       'img/video-travel/19.jpg',
       'img/video-travel/20.jpg',
-      'img/video-travel/21.jpg',
-      'img/video-travel/23.jpg',
-      'img/video-travel/24.jpg',
-      'img/video-travel/26.jpg',
       'img/video-travel/27.jpg',
       'img/video-travel/28.jpg',
     ],
@@ -283,25 +268,25 @@ window.PROJECTS = {
 
   'a-place': {
     title: 'A Place Without a Name',
-    meta: ['2023-2026'],
+    meta: ['2023–2026'],
     content: [
-      { text: 'Names do not simply describe places; they shape the ways we perceive, approach, and relate to the world. The Italo-Swiss Monte Rosa massif, due to its altitude and inaccessibility, remained for centuries one of the least known and largely unnamed regions of the European continent. What once existed as an indistinct and distant territory is today densely covered by hundreds of names, symbols, routes, and measurements attempting to define, classify, and enclose the mountain.' },
+      { text: 'Names do not simply describe places; they shape the ways we perceive, approach, and relate to the world. The Italian-Swiss Monte Rosa massif, due to its altitude and inaccessibility, remained for centuries one of the least-known and largely unnamed regions of the European continent. What once existed as an indistinct and distant territory is today densely covered by hundreds of names, symbols, routes, and measurements attempting to define, classify, and enclose the mountain.' },
       { text: '"A Place Without a Name" traces the slow and surprisingly recent process through which the high alpine landscape became visible, recognisable, and ultimately governable through cartography and language. Through a toponymic map of the massif, it examines how naming transforms the unknown into something culturally and politically legible, revealing how maps do not merely reflect territory but actively produce it.\nFollowing the emergence of paths, glaciers, peaks, shelters, and borders across different historical maps, the work investigates the relationship between exploration, representation, and conquest. The mountain appears not as a fixed geographical object, but as a landscape progressively constructed through acts of measurement, orientation, and naming. What was once a place without names became fragmented into a dense surface of references and coordinates, where every feature demands identification.' },
       { text: 'By focusing on a situated case, the project reflects more broadly on how humans confront unfamiliar environments: reducing distance through representation, transforming uncertainty into knowledge, and translating territory into language. The map becomes both a document of discovery and a tool through which the unknown is gradually occupied.' },
       'img/SpitzeOhneName_2.jpg',
       'img/SpitzeOhneName_1.jpg',
       'img/aplace_2.jpg',
-      { src: 'img/aplace_4.jpg', caption: 'List of the toponyms of Monte Rosa peaks and their explanations. CAI Journal, Date Unknown.' },
+      { src: 'img/aplace_4.jpg', caption: 'List of the toponyms of Monte Rosa peaks and their explanations. CAI Journal, date unknown.' },
       'img/aplace_3.jpg',
       { text: 'You can read the full text <a href="https://metamorphiczone.com/field-notes/a-place-without-a-name">here</a>.' },
     ],
     // generated from content:
-    body: 'Names do not simply describe places; they shape the ways we perceive, approach, and relate to the world. The Italo-Swiss Monte Rosa massif, due to its altitude and inaccessibility, remained for centuries one of the least known and largely unnamed regions of the European continent. What once existed as an indistinct and distant territory is today densely covered by hundreds of names, symbols, routes, and measurements attempting to define, classify, and enclose the mountain.\n\n"A Place Without a Name" traces the slow and surprisingly recent process through which the high alpine landscape became visible, recognisable, and ultimately governable through cartography and language. Through a toponymic map of the massif, it examines how naming transforms the unknown into something culturally and politically legible, revealing how maps do not merely reflect territory but actively produce it.\nFollowing the emergence of paths, glaciers, peaks, shelters, and borders across different historical maps, the work investigates the relationship between exploration, representation, and conquest. The mountain appears not as a fixed geographical object, but as a landscape progressively constructed through acts of measurement, orientation, and naming. What was once a place without names became fragmented into a dense surface of references and coordinates, where every feature demands identification.\n\nBy focusing on a situated case, the project reflects more broadly on how humans confront unfamiliar environments: reducing distance through representation, transforming uncertainty into knowledge, and translating territory into language. The map becomes both a document of discovery and a tool through which the unknown is gradually occupied.\n\nYou can read the full text <a href="https://metamorphiczone.com/field-notes/a-place-without-a-name">here</a>.',
+    body: 'Names do not simply describe places; they shape the ways we perceive, approach, and relate to the world. The Italian-Swiss Monte Rosa massif, due to its altitude and inaccessibility, remained for centuries one of the least-known and largely unnamed regions of the European continent. What once existed as an indistinct and distant territory is today densely covered by hundreds of names, symbols, routes, and measurements attempting to define, classify, and enclose the mountain.\n\n"A Place Without a Name" traces the slow and surprisingly recent process through which the high alpine landscape became visible, recognisable, and ultimately governable through cartography and language. Through a toponymic map of the massif, it examines how naming transforms the unknown into something culturally and politically legible, revealing how maps do not merely reflect territory but actively produce it.\nFollowing the emergence of paths, glaciers, peaks, shelters, and borders across different historical maps, the work investigates the relationship between exploration, representation, and conquest. The mountain appears not as a fixed geographical object, but as a landscape progressively constructed through acts of measurement, orientation, and naming. What was once a place without names became fragmented into a dense surface of references and coordinates, where every feature demands identification.\n\nBy focusing on a situated case, the project reflects more broadly on how humans confront unfamiliar environments: reducing distance through representation, transforming uncertainty into knowledge, and translating territory into language. The map becomes both a document of discovery and a tool through which the unknown is gradually occupied.\n\nYou can read the full text <a href="https://metamorphiczone.com/field-notes/a-place-without-a-name">here</a>.',
     images: [
       'img/SpitzeOhneName_2.jpg',
       'img/SpitzeOhneName_1.jpg',
       'img/aplace_2.jpg',
-      { src: 'img/aplace_4.jpg', caption: 'List of the toponyms of Monte Rosa peaks and their explanations. CAI Journal, Date Unknown.' },
+      { src: 'img/aplace_4.jpg', caption: 'List of the toponyms of Monte Rosa peaks and their explanations. CAI Journal, date unknown.' },
       'img/aplace_3.jpg',
     ],
   },

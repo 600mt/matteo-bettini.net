@@ -1,88 +1,2175 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Matteo Bettini</title>
-<style>
-:root{
-  color-scheme:light;
-  box-sizing:border-box;
-  --text-color:#005f9e;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:env(safe-area-inset-bottom,0px);
-}
-*,*::before,*::after{box-sizing:inherit}
-html,body{height:100%}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-body{
-  margin:0;
-  background:#fff;
-  color:var(--text-color);
-  font-family:"Times New Roman",Times,serif;
-  font-size:20px;
-  line-height:1.3;
-  display:flex;
-  flex-direction:column;
-  padding:16px;
-}
-a,
-a:visited,
-a:active{
-  color:inherit;
-  text-decoration:none;
-}
-p,ul{margin:0}
-.bio{max-width:none}
-.contact{font-size:16px;text-align:center;margin-top:auto;padding-top:16px}
-.contact br{display:none}
-.clients p{display:inline}
-.cat{font-family:Arial,Helvetica,sans-serif;font-size:calc(1em - 0.5pt);opacity:0.5}
-.cat .name-letter,.clients>p.cat{font-family:"Times New Roman",Times,serif}
-.clients>p.cat{font-size:1em}
-.ruler{position:fixed;top:0;left:0;right:0;height:8px;display:flex;border-right:1px solid var(--text-color);pointer-events:none}
-.ruler span{flex:1;border-left:1px solid var(--text-color)}
-.ruler-v{right:auto;bottom:0;width:8px;height:auto;flex-direction:column;border-right:0;border-bottom:1px solid var(--text-color)}
-.ruler-v span{border-left:0;border-top:1px solid var(--text-color)}
-.name-letter{display:inline-block;transform:rotate(var(--rotation))}
-@media (max-width:767px){
-  .bio,.clients{font-size:19px}
-  .contact{
-    width:100vw;
-    margin-left:calc(50% - 50vw);
-    margin-right:calc(50% - 50vw);
-    line-height:1.4;
-  }
-  .contact br{display:block}
-}
-@media (min-width:768px){.bio,.clients{font-size:2em;line-height:1.15}}
-</style>
+  <meta charset="UTF-8">
+  <link rel="icon" href="img/favicon.jpg" type="image/jpg">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Matteo Bettini</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    body { overflow:hidden; background:#bababa; font-family:'Times New Roman', Times, serif; }
+
+
+    .main-layout { display:flex; width:100vw; height:100vh; height:100dvh; }
+
+    .scroll-area { flex:1; position:relative; overflow:hidden; }
+
+    .carousel-clip {
+      position:absolute;
+      top: calc(-1 * env(safe-area-inset-top, 0px));
+      bottom: calc(-1 * env(safe-area-inset-bottom, 0px));
+      left: 0;
+      right: 0;
+      overflow:hidden; touch-action:pan-y;
+    }
+    .carousel-track {
+      position:absolute;
+      top: env(safe-area-inset-top, 0px);
+      left:0; width:100%; will-change:transform;
+    }
+    .carousel-track img   { width:100%; height:auto; display:block; pointer-events:none; -webkit-user-drag:none; }
+    .carousel-track video { width:100%; height:auto; display:block; pointer-events:none; min-height:0; vertical-align:top; }
+    /* a 16:9 clip shown in the 3:2 shape of the carousel pictures: cropped from the middle,
+       no re-encoding (object-position moves the crop, e.g. 30% 50% to keep more of the left) */
+    .carousel-track video.crop-3-2 { aspect-ratio:3 / 2; object-fit:cover; object-position:50% 50%; }
+
+    .image-wrapper { position:relative; width:100%; font-size:0; }
+    .image-wrapper.has-project { cursor:pointer; }
+
+    .thumb-bar {
+      width:60px; height:100vh; height:100dvh; flex-shrink:0;
+      position:fixed; right:0; z-index:10;
+      overflow-y:auto; scrollbar-width:none; transition:opacity .2s;
+    }
+    body.panel-open .thumb-bar { opacity:0; pointer-events:none; }
+    .thumb-bar::-webkit-scrollbar { display:none; }
+    .thumb-item { width:100%; cursor:pointer; opacity:.5; transition:opacity .2s; }
+    .thumb-item:hover,.thumb-item.active { opacity:1; }
+    .thumb-item img { width:100%; height:auto; display:block; pointer-events:none; }
+
+    /* ── THE TEXT COLOURS ──────────────────────────────────────────────
+       --ink: every text laid over the pictures (footer, caption, Archive
+       and Info, speed dial), plain, no blend. To try colours live without
+       editing: open the page with ?picker at the end of the address.
+       The archive and project panel colours are set just below. */
+    /* the size of every text over the carousel (footer, caption, Archive
+       and Info, speed dial): 0.7rem, growing with the window once it's
+       wider than about 1170px, up to about 2.4 times that on very wide screens */
+    :root { --carousel-text:clamp(0.7rem, 0.72vw, 1.7rem); }
+    /* on a desktop whose browser window fills the whole screen (or nearly),
+       the same texts are visibly bigger (see fullWindow in the script) */
+    :root.full-window { --carousel-text:clamp(0.9rem, 0.95vw, 2.2rem); }
+    /* the footer at the top (desktop) a step bigger than the other texts on
+       the carousel; it grows with them. Raise 1.35 for bigger. */
+    :root { --footer-text:calc(var(--carousel-text) * 1.35); }
+
+    :root { --ink:#ffffff; }
+    /* the text colour of the archive and the project panel (no longer
+       worked out from --ink): a soft black, slightly grey; the faint one,
+       see-through, for secondary text */
+    :root {
+      --ink-on-white:#2b2b2b;
+      --ink-on-white-faint:rgba(43, 43, 43, .5);
+    }
+
+    /* the texts over the pictures are thickened a touch with a thin outline
+       in their own colour (not the bold font): raise 0.35px for heavier */
+    #footer .foot-hl, .carousel-cap, #archive-float a, #speed-switch button {
+      -webkit-text-stroke:0.35px currentColor;
+      paint-order:stroke fill;
+    }
+
+    /* the soft dark shade along the bottom edge (see #bottom-shade): darkest
+       at the edge of the screen, fading to nothing along eased stops, so it
+       has no visible border */
+    :root { --shade:rgba(0,0,0,0.180) 0%, rgba(0,0,0,0.176) 8%, rgba(0,0,0,0.167) 17%, rgba(0,0,0,0.152) 25%, rgba(0,0,0,0.133) 33%, rgba(0,0,0,0.112) 42%, rgba(0,0,0,0.090) 50%, rgba(0,0,0,0.068) 58%, rgba(0,0,0,0.047) 67%, rgba(0,0,0,0.028) 75%, rgba(0,0,0,0.013) 83%, rgba(0,0,0,0.004) 92%, rgba(0,0,0,0.000) 100%; }
+
+    /* phones may enlarge some text on their own (iOS, Android): keep every
+       size exactly as written, so the footer's two lines match */
+    html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+
+    #footer {
+      /* desktop: in the top left corner, 14px from the top and left edges; the lines centred on each other, close together.
+         Mobile: at the top, centred (see below). */
+      position:fixed; top:calc(14px + env(safe-area-inset-top, 0px));
+      left:calc(14px + env(safe-area-inset-left, 0px)); width:max-content; max-width:calc(50vw - 28px);   /* the top left corner */
+      text-align:center;   /* the lines centred on each other */
+      margin:0;
+      color:#ffffff; font-size:1.25rem; line-height:1.05;   /* larger than the captions */
+      mix-blend-mode:normal; z-index:100; pointer-events:none;
+    }
+    /* it never moves: when the archive or a project panel opens, it stays
+       exactly where it is, behind the panel (z-index 100, under both) */
+    /* the texts over the carousel (footer, caption) are not clickable, and
+       a click on them doesn't reach the picture behind either: they catch
+       it and do nothing. Only "Archive and Info" (and the speed dial) act. */
+    #footer .foot-hl, #footer .foot-dash, #footer .foot-prac, #footer .foot-more,
+    .carousel-cap { pointer-events:auto !important; cursor:default; }
+    /* the footer's two lines highlighted: white behind, black text, like a
+       marker over the words. The name is its own little block, tilted 5°
+       clockwise; the practice below it stays straight. */
+    #footer .foot-hl {
+      background:#ffffff; color:#000000;
+      padding:0.08em 0.3em;
+      white-space:nowrap;   /* always two lines: the name, then the practice */
+    }
+    #footer .foot-name { display:inline-block; transform:rotate(5deg); }
+    /* a line of dashes under the practice, tilted the other way (-5°) */
+    #footer .foot-dash { display:inline-block; transform:rotate(-5deg); white-space:pre; color:var(--ink); -webkit-text-stroke:0.35px currentColor; paint-order:stroke fill; }
+    /* desktop: under the name (left column); mobile: under the practice */
+    #footer .foot-dash-mob { display:none; }
+    #footer .foot-mail-mob { display:none; }   /* desktop has the email in its right column */
+    /* the practice, email and city under the name, small like the
+       captions, a little apart; in the same ink and blend as the rest of the footer */
+    #footer .foot-contact {
+      display:block; margin-top:1.4em;
+      font-size:var(--footer-text); line-height:1.25;
+      color:var(--ink);
+      -webkit-text-stroke:0.35px currentColor; paint-order:stroke fill;
+    }
+    #footer .foot-contact a { text-decoration:none; }
+
+    /* the footer as two columns, each half the screen wide, both aligned
+       left and in the captions' size: the name on the left, the practice,
+       email and city on the right. The same on desktop and mobile. */
+    #footer, body.archive-open #footer {
+      display:flex; align-items:flex-start;
+      left:0; right:0; width:100vw; max-width:none; transform:none;
+      text-align:left; font-size:var(--footer-text); line-height:1.25;
+    }
+    #footer .foot-left { flex:0 0 50vw; width:50vw; min-width:0; padding-left:calc(14px + env(safe-area-inset-left, 0px)); padding-right:14px; }
+    #footer .foot-contact { flex:0 0 50vw; width:50vw; min-width:0; margin-top:0; padding-right:calc(14px + env(safe-area-inset-right, 0px)); white-space:normal; }
+
+    /* the footer's text: plain, in the ink colour, no highlight */
+    #footer .foot-hl { background:none; color:var(--ink); }
+
+    /* the Info button, which opens the archive (the footer does too).
+       At the bottom, aligned left at the start of the right half, in line
+       with the footer's right column; 14px from the bottom. The panels always cover it when open. */
+    #archive-float {
+      position:fixed; left:50vw; bottom:0; margin:0;   /* the start of the right half, in line with the footer's right column */
+      padding:0 0 calc(14px + env(safe-area-inset-bottom, 0px));
+      white-space:nowrap;
+      color:var(--ink); mix-blend-mode:normal; font-size:var(--footer-text); line-height:1.25;   /* the same size as the footer at the top */
+      z-index:101; pointer-events:none;   /* only the word itself is clickable */
+    }
+    #archive-float a { color:inherit; text-decoration:none; pointer-events:auto; cursor:pointer; text-underline-offset:0.15em; }
+    #archive-float a:hover, #archive-float a:focus-visible { text-decoration:underline; }   /* looks clickable on hover */
+    /* desktop: one soft shade along the whole bottom edge, behind the
+       caption and the Info button (not on mobile) */
+    #bottom-shade {
+      position:fixed; left:0; right:0; bottom:0; height:80px;
+      background:linear-gradient(to top, var(--shade));
+      pointer-events:none; z-index:1;
+    }
+
+
+    #bio {
+      position:fixed; top:5px; left:2px;
+      width:calc(100vw - 80px);
+      color:#ffef3d; line-height:1.2;
+      mix-blend-mode:normal; z-index:100; pointer-events:none;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    /* side panel — 45vw, white, black text, minimal/brutalist */
+    /* the project panel and the archive float a little in from the screen
+       edges (--panel-gap), corners just barely rounded, on every device */
+    :root { --panel-gap:8px; }
+    .side-panel {
+      position:fixed; top:var(--panel-gap); right:var(--panel-gap);
+      height:calc(100vh - 2 * var(--panel-gap)); height:calc(100dvh - 2 * var(--panel-gap)); width:0;
+      overflow:hidden; z-index:200;
+      background:#ffffff;
+    }
+    body.panel-open .side-panel { width:calc(50vw - var(--panel-gap)); }   /* the same width as the archive panel */
+    /* the archive and the project panel: slightly rounded on their open
+       (left) side; the right side runs off the screen edge */
+    .side-panel, #archive-view { border-radius:7px; }   /* corners softly rounded */
+    .side-panel { color:var(--ink-on-white); }   /* the archive's blue */
+
+    /* native-scroll column: text then images */
+    .side-clip {
+      position:absolute; inset:0;
+      overflow-y:scroll; overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      opacity:0; transition: opacity 0.2s ease;
+      scrollbar-width:none;
+    }
+    body.panel-open .side-clip { opacity:1; }
+    .side-clip::-webkit-scrollbar { display:none; }
+
+    /* images: 1% padding on all sides and between them */
+    .side-track { width:100%; padding:1% 1% 0 1%; }
+    .side-track .side-img { margin-bottom:0%; }
+    .side-track .side-img:last-child { margin-bottom:1%; }
+
+    /* text paragraphs: consecutive paragraphs are separated by one blank line */
+    .side-para + .side-para { margin-top:1.25em; }
+    /* links inside project text */
+    .side-para a { color:inherit; text-decoration:underline; text-underline-offset:0.12em; cursor:pointer; }
+    .side-para a:hover { color:var(--ink-on-white-faint); }
+    /* text placed between images — sits in the same column as the body above */
+    .side-track .side-text {
+      margin:6% 0 7% 50%;   /* room above and below text placed between pictures */
+      padding-right:0.5vw;   /* + the track's 1% = the archive's margin (1vw); the pictures keep just the 1% */
+      font-size:0.7em;
+      line-height:1.25;
+      color:var(--ink-on-white);
+    }
+    .side-track .side-text:first-child { margin-top:1%; }
+    .side-track .side-img img {
+      width:100%; height:auto; display:block;
+      pointer-events:none; -webkit-user-drag:none;
+      opacity:0; transition:opacity .3s ease;
+      background:#f0f0f0;   /* light placeholder while decoding */
+    }
+    .side-track .side-img img.loaded { opacity:1; }
+    .side-track .side-img .side-cap {
+      display:block;
+      color:var(--ink-on-white-faint);
+      font-size:0.6em;
+      line-height:1.2;
+      margin-top:0.3em;
+    }
+
+    /* description text — black on white, no borders */
+    .side-desc {
+      width:100%;
+      color:var(--ink-on-white); line-height:1.25;
+      background:transparent;
+      text-align:left;
+      padding:2% 2% 0 2%;   /* narrow side margins (2% of the panel) */
+      letter-spacing:0;
+    }
+    /* title spans the full width across the top */
+    .side-title {
+      width:50%;
+      font-size:0.8em;
+      padding-bottom:10%;
+    }
+    .side-title .side-subtitle {
+      display:block;
+      color:var(--ink-on-white-faint);
+      margin-top:0.4em;
+    }
+    /* meta (left) and body (right) sit side by side, aligned at the same top */
+    .side-cols { display:flex; width:100%; align-items:flex-start; padding-bottom:6%; }   /* room between the text and the pictures below */
+    .side-cols .side-meta {
+      width:50%;
+      padding-right:2%;
+      color:var(--ink-on-white-faint);
+      font-family: Arial, sans-serif;
+      font-size:0.7em;
+    }
+    .side-cols .side-body {
+      width:50%;
+      font-size:0.7em;
+    }
+
+    /* related works — rounded grey buttons after the "Related works" label */
+    .side-related {
+      width:100%;
+      padding-top:6px;   /* a few pixels below the meta lines */
+    }
+
+    /* desktop: title (left) + related works (right) share the top row */
+    .side-toprow { display:flex; width:100%; align-items:flex-start; padding-bottom:10%; }
+    .side-toprow .side-title { padding-bottom:0; }   /* gap moves to the row */
+    .side-toprow .side-related-col {
+      width:50%;
+      font-size:0.7em;   /* same scale as .side-meta so pills match the meta size */
+    }
+    .side-toprow .side-related-col .side-related { padding-top:0; }
+    .side-related .side-related-title {
+      color:var(--ink-on-white-faint);
+      font-family: Arial, sans-serif;
+      font-size:1em;   /* same size as the meta lines (parent .side-meta is 0.7em) */
+      letter-spacing:0.02em;
+      margin-right:0.4em;
+    }
+    .side-related .related-btns {
+      display:inline;   /* buttons flow right after the label text */
+    }
+    .side-related .related-btn {
+      display:inline-block;
+      background:var(--ink-on-white-faint);
+      color:#ffffff;
+      font-family: Arial, sans-serif;
+      font-size:1em;   /* match the meta / label size */
+      line-height:1.2;
+      padding:0.2em 0.7em;
+      margin:0 0.3em 0.3em 0;
+      border-radius:999px;
+      cursor:pointer;
+      border:none;
+      transition:background .15s;
+      pointer-events:all;
+      vertical-align:middle;
+      white-space:nowrap;
+      text-align:left;
+    }
+    .side-related .related-btn:hover { background:var(--ink-on-white); }
+
+    /* carousel captions: same look as the side-panel captions (.side-cap).
+       The captions in the list are only the source: one caption is shown in
+       the bottom left corner of the carousel. It belongs to the picture that covers
+       the middle of the screen and fades over to the next one once that one
+       crosses it (see updateCaption). Two layers, so the old one fades out
+       while the new one fades in. */
+    .image-wrapper .caption { display:none; }
+    .carousel-cap {
+      /* desktop: in the bottom left corner, 14px from the bottom and left. Not shown on mobile (see below). */
+      position:absolute; left:calc(14px + env(safe-area-inset-left, 0px)); bottom:0;   /* the bottom left corner */
+      padding:0 0 calc(14px + env(safe-area-inset-bottom, 0px));
+      box-sizing:border-box;
+      width:max-content; max-width:calc(50vw - 28px);   /* within the left half */
+      text-align:left;
+      color:var(--ink);
+      font-size:var(--carousel-text);   /* same 9.6px as .side-cap */
+      line-height:1.2;
+      pointer-events:none;
+      opacity:0; transition:opacity .6s ease;
+      z-index:2;
+    }
+    .carousel-cap.show { opacity:1; }
+
+    
+
+    @media (max-width:768px) and (hover:none) and (pointer:coarse) {
+      .more-label { display:none; }
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width:768px) and (hover:none) and (pointer:coarse) {
+      .main-layout {
+        height: 100vh;
+        height: 100dvh;
+        min-height: -webkit-fill-available;
+      }
+      .thumb-bar { display:none; }
+      /* mobile: a plain block in the top left corner, quite big and sized to
+         the screen width: the name, the practice, the email, one under the
+         other, aligned left, straight, close together. Behind a panel when
+         one opens. */
+      #footer, body.archive-open #footer {
+        display:block; left:calc(14px + env(safe-area-inset-left, 0px)); right:auto; width:max-content; max-width:calc(100vw - 28px);
+        transform:none; transition:none;
+        text-align:left; font-size:5.6vw; line-height:1.12;
+      }
+      #footer .foot-name { transform:none; }                       /* straight */
+      #footer .foot-hl, #footer .foot-contact { padding:0; -webkit-text-stroke:0; }   /* flush left, plain weight */
+      #footer .foot-pair { display:block; line-height:inherit; }   /* the practice and email as plain lines */
+      #footer .foot-left, #footer .foot-contact { display:block; flex:none; width:auto; padding:0; }
+      #footer .foot-contact { font-size:1em; margin-top:0; }
+      #footer .foot-more { display:none; }
+      #footer .foot-dash-desk { display:none; }
+      #footer .foot-mail-mob { display:inline; }   /* mobile: the email as the third line */
+      /* mobile: no caption; the Info button at the bottom centre, no shade,
+         the footer's size. Hidden while the archive is
+         open (a tap on the carousel strip closes it) and behind a project
+         panel. */
+      .carousel-cap { display:none; }
+      #bottom-shade { display:none; }
+      #archive-float {
+        right:auto; left:50%; transform:translateX(-50%);   /* mobile: bottom centre */
+        padding:0 0 calc(14px + env(safe-area-inset-bottom, 0px));
+        background:none;   /* no shade on mobile */
+        font-size:0.8rem; line-height:1.2;   /* mobile: a bit smaller than the footer */
+      }
+      body.archive-open #archive-float { visibility:hidden; }
+      
+      #bio {
+        width:100vw; font-size:.72em; line-height:1.3;
+        bottom: max(2px, env(safe-area-inset-bottom, 2px));
+        transition: opacity .3s;
+        padding-bottom: 0;
+      }
+      body.panel-open #bio { opacity:0; pointer-events:none; }
+
+      /* mobile: the project panel is a sheet like the archive: the full
+         width (less the gap), 80% of the screen height, sliding up from the
+         bottom; it follows the finger when pulled down (see makeSheet) */
+      .side-panel {
+        position:fixed; top:auto; bottom:calc(var(--panel-gap) + env(safe-area-inset-bottom, 0px));
+        left:var(--panel-gap); right:var(--panel-gap); width:auto;
+        height:80vh; height:80dvh;
+        z-index:200; background:#ffffff;
+        visibility:hidden;
+        transform:translateY(calc(100% + 30px));
+        transition:transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s linear .32s;
+      }
+      body.panel-open .side-panel {
+        width:auto; visibility:visible; transform:translateY(0);
+        transition:transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s;
+      }
+      .side-clip { overscroll-behavior:contain; }
+
+      .side-desc {
+        position:static; width:100%;
+        padding:0 14px;   /* narrow side margins on mobile */
+        padding-top:0.3em;   /* small breathing room at the top of the panel */
+        font-size:1em; line-height:1.27;
+        color:var(--ink-on-white);
+      }
+      /* small viewport: title 50% (left) + meta 50% (right) share the top row,
+         then spacing, then body/desc at full width below */
+      .side-head {
+        display:flex; width:100%; align-items:flex-start;
+        padding-bottom:2em;   /* spacing before the full-width desc row */
+      }
+      .side-head .side-title { width:50%; padding-bottom:0; }
+      .side-head .side-meta {
+        width:50%; padding-left:2%;
+        color:var(--ink-on-white-faint);
+        font-family: Arial, sans-serif;
+        font-size:0.72em;   /* Arial reads larger than Times, so a touch smaller matches the title optically */
+      }
+      .side-cols { flex-direction:column; padding-bottom:2em; }   /* room between the text and the pictures below */
+      .side-cols .side-meta { display:none; }   /* meta now live in .side-head on mobile */
+      .side-cols .side-body { width:100%; font-size:1em; }
+      .side-track .side-text {
+        margin:2em 0 2em 0;
+        padding:0 calc(14px - 0.88vw);   /* + the track's 1% (of 88vw) = the archive's 14px; the pictures keep just the 1% */
+        font-size:1em; line-height:1.27;
+      }
+      .side-related { padding-top:6px; }
+      .side-related .side-related-title,
+      .side-related .related-btn { font-size:1em; }   /* same as the mobile meta */
+    }
+
+    /* ── MOBILE CAROUSEL (from index-static.html) ──────────────────────
+       On phones (body.m-static, set by the script) the vertical carousel
+       is replaced by one picture filling the screen and a strip of
+       thumbnails along the top. A tap on the picture opens its project,
+       a swipe left/right (or a thumbnail) changes the picture. */
+    #m-bg, #m-thumbs { display:none; }
+    body.m-static .carousel-track { display:none; }
+    body.m-static .carousel-clip { touch-action:none; }   /* swipes are handled by the script */
+    body.m-static #m-bg {
+      display:block; position:absolute; inset:0;
+      background-size:cover; background-position:center; background-repeat:no-repeat;
+    }
+    body.m-static #m-thumbs {
+      display:flex; gap:0;
+      position:fixed; top:0; left:0; right:0;
+      padding-top:env(safe-area-inset-top, 0px);
+      overflow-x:auto; overflow-y:hidden;
+      scrollbar-width:none;              /* Firefox */
+      -webkit-overflow-scrolling:touch;
+      z-index:100;
+    }
+    #m-thumbs::-webkit-scrollbar { display:none; }
+    #m-thumbs button {
+      flex:0 0 auto; display:block;
+      border:0; padding:0; background:none; cursor:pointer;
+      opacity:1; transition:opacity 0.15s;
+    }
+    #m-thumbs button:focus-visible { outline:1px solid currentColor; outline-offset:1px; }
+    :root { --m-thumb:44px; }   /* the height of the thumbnails along the top */
+    #m-thumbs img { display:block; height:var(--m-thumb); width:auto; pointer-events:none; }
+    /* the project panel runs from just under the thumbnail strip to the
+       bottom, so the thumbnails stay visible above it */
+    @media (max-width:768px) and (hover:none) and (pointer:coarse) {
+      body.m-static .side-panel {
+        top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));
+        height:auto;
+      }
+    }
+    /* no footer on phones */
+    body.m-static #footer { display:none; }
+    @media (prefers-reduced-motion: reduce) { #m-thumbs button { transition:none; } }
+
+    /* ── ARCHIVE VIEW (in-page swap) ── */
+    /* a panel on the right, like the project panel, over the carousel, which keeps
+       running beside it: 50% of the screen on desktop, 88% on mobile (see below) */
+    #archive-view {
+      position:fixed; top:var(--panel-gap); bottom:var(--panel-gap); right:var(--panel-gap); width:calc(50vw - var(--panel-gap)); z-index:300;
+      background:#ffffff; color:var(--ink-on-white);   /* the over-picture ink, as it looks on white */
+      overflow-y:auto; -webkit-overflow-scrolling:touch;
+      display:none;
+      font-family:'Times New Roman', Times, serif;
+      -webkit-user-select:text; user-select:text;
+      scrollbar-width:none;   /* scrolls, but no visible scroll bar */
+    }
+    #archive-view::-webkit-scrollbar { display:none; }
+    body.archive-open { overflow:hidden; }
+    body.archive-open #archive-view { display:block; }
+
+    /* text can be selected and copied in the archive and the project panel,
+       also on phones (long-press). The page makes everything unselectable
+       (see * at the top), so the text inside them is turned back on;
+       the pictures stay protected. */
+    #archive-view, #archive-view *,
+    .side-panel, .side-panel * { -webkit-user-select:text; user-select:text; -webkit-touch-callout:default; }
+    .side-panel img, .side-panel video { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+    #archive-view ::selection, .side-panel ::selection { background-color:#ffea00; }
+    #archive-view a { color:inherit; }
+
+
+    /* archive, laid out like a CV: the category (or the year) on a line of
+       its own, a blank line, then one row per entry: title | details | year.
+       One size, black only, space is the only separator. */
+    #archive-content {
+      padding-left:3%;     /* the same side margins as the project panel */
+      padding-right:3%;
+      padding-top:2em;   /* room beneath the Year / Type switch */
+      padding-bottom: calc(1.2em + env(safe-area-inset-bottom, 0px)); /* the scroll ends just after the closing lines */
+      font-size:0.76em; line-height:1.25;   /* desktop: the size of the project descriptions (.side-body); mobile has its own (see below) */
+      color:inherit;
+    }
+    /* the footer's sentence, centred at the top, above the Year / Type
+       switch: phones only, where the footer itself is hidden (see MOBILE CAROUSEL) */
+    .arch-intro { display:none; }
+    /* the Close button: phones only, over the archive's top right corner,
+       big enough to hit with a thumb; it stays put while the list scrolls */
+    #arch-close {
+      display:none;
+      position:fixed; z-index:301;
+      top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));   /* the archive's top (see body.m-static #archive-view) */
+      right:var(--panel-gap);
+      padding:12px 14px;
+      font:inherit; font-size:0.65rem; line-height:1.2;
+      color:var(--ink-on-white); border:0; cursor:pointer;
+      background:#ffffff; border-radius:7px;   /* the list scrolls under it, out of sight */
+    }
+    body.m-static .arch-intro {
+      display:block; text-align:center;
+      padding:20px 20px 0; font-size:0.7em; line-height:1.2;   /* as the archive list on mobile */
+      font-family:Arial, sans-serif; color:var(--ink-on-white-faint);   /* as the closing lines at the bottom (.arch-members) */
+    }
+    .arch-group > span { display:block; margin-bottom:1.15em; }   /* the heading, then a blank line */
+    .by-type .arch-group > span { letter-spacing:0.2em; color:var(--ink-on-white-faint); }   /* the type names, spaced out, in the light grey of the closing lines */
+    /* year view: the year sits once in its own column on the left, level
+       with the first of its entries; the entries are title | details */
+    .by-year .arch-group { display:grid; grid-template-columns:3.6em minmax(0, 1fr); column-gap:1.5em; }
+    .by-year .arch-group > span { margin-bottom:0; }
+    .arch-group + .arch-group { margin-top:1.6em; }               /* the space between categories */
+    .arch-members { margin-top:7em; text-align:center; color:var(--ink-on-white-faint); font-family:Arial, sans-serif; }   /* the closing lines: well below the list, centred, fainter */
+    .arch-members a { text-underline-offset:0.12em; }
+    .arch-entry a { text-underline-offset:0.12em; }
+    .arch-entry.is-upcoming, .arch-entry.is-upcoming .arch-with { color:var(--ink-on-white-faint); }   /* things still to come, in grey */
+    .arch-nowrap { white-space:nowrap; }
+    .arch-with { color:var(--ink-on-white-faint); }   /* the collaborators: fainter, after the client/venue */
+    /* every entry, both views: title | details | year. The year column at the
+       right edge is right-aligned and wide enough for a range ("2022–25").
+       Every entry uses the same split, so the columns line up down the list. */
+    .arch-entry { display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr) 3.6em; column-gap:1.5em; }
+    .arch-title { grid-column:1; grid-row:1; }
+    .arch-meta  { grid-column:2; grid-row:1; align-self:start; }   /* only as tall as its own lines (the title cell can be taller) */
+    .arch-year  { grid-column:3; grid-row:1; text-align:right; white-space:nowrap; }
+    .by-year .arch-entry { grid-template-columns:minmax(0, 1fr) minmax(0, 1.1fr); }
+
+    /* year / type switch — desktop: a narrow row at the top, above the list,
+       same size as the entries; it scrolls with the list.
+       The view you're on is underlined, the other one is plain text. */
+    #arch-switch {
+      position:static;
+      padding:3% 3% 0;     /* the same outer margin as the project panel */
+      font-size:0.76em; line-height:1.2; color:inherit;
+    }
+    #arch-switch button {
+      font:inherit; color:inherit; background:none; border:0; padding:0;
+      cursor:pointer; text-decoration:none; text-underline-offset:0.12em;
+    }
+    #arch-switch button[aria-pressed="true"] { text-decoration:underline; cursor:default; }
+
+    @media (max-width:768px) and (hover:none) and (pointer:coarse) {
+      /* mobile: the switch sits at the top, above the list, and scrolls with it */
+      #arch-switch {
+        position:static;
+        padding:20px 20px 0;   /* the same 14px margin as the list */
+        font-size:0.7em;   /* as the archive list on mobile */
+      }
+      /* mobile: a sheet the full width of the screen and 80% of its height,
+         sliding up from the bottom; the strip of carousel left at the top
+         closes it when tapped, and so does a swipe down from its top */
+      #archive-view {
+        display:block; visibility:hidden;
+        /* floating a little in from the edges, corners just barely rounded */
+        top:auto; bottom:calc(var(--panel-gap) + env(safe-area-inset-bottom, 0px)); left:var(--panel-gap); right:var(--panel-gap);
+        width:auto; height:80vh; height:80dvh;
+        border-radius:7px;
+        overscroll-behavior:contain;   /* no rubber-band bounce fighting the pull-down */
+        transform:translateY(calc(100% + 30px));   /* fully below the screen when closed */
+        transition:transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s linear .32s;
+      }
+      body.archive-open #archive-view {
+        visibility:visible; transform:translateY(0);
+        transition:transform .32s cubic-bezier(.2,.8,.2,1), visibility 0s;
+      }
+      /* phones with the one-picture carousel: the archive runs the whole
+         height of the screen, still floating in from the edges, rounded.
+         Closed with the Close button, or a swipe down from its top (see makeSheet) */
+      body.m-static #archive-view {
+        top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));   /* just under the thumbnail strip, like the project panel */
+        height:auto;
+      }
+      body.m-static.archive-open #arch-close { display:block; }
+      #archive-content { font-size:0.7em; line-height:1.2; padding-left:20px; padding-right:20px; }   /* much smaller than the project descriptions, so entries fit; 14px margins, like the rest of the site */
+      /* the details get a bigger share and the gaps are tighter,
+         so they break onto fewer lines on a narrow screen */
+      /* the titles a little wider than the short details; the year column
+         wide enough for a range ("2020–21") on one line. A detail that's
+         still too long wraps onto a second line, never cut off. */
+      .arch-entry { grid-template-columns:minmax(0, 1.25fr) minmax(0, 1fr) 4.2em; column-gap:0.6em; }
+      .by-year .arch-entry { grid-template-columns:minmax(0, 1.25fr) minmax(0, 1fr); }
+      .by-year .arch-group { grid-template-columns:4.2em minmax(0, 1fr); column-gap:0.6em; }
+      .by-year .arch-group > span, .arch-year { white-space:nowrap; }
+      .arch-with { display:none; }   /* phones: no collaborators at all, so no entry has them and another not */
+    }
+
+    /* carousel speed switch: 1 2 r on a small round dial, desktop only, at
+       the middle of the screen on the right (level with the footer), same
+       size as the footer. Only the letters, standing upright around a circle:
+       the one in use sits at the dial's left point, in the middle, nearest
+       the page; the other two above and below it toward the edge, smaller
+       and fainter. Click one, scroll over the dial or use the arrow keys to
+       turn it (see speedSwitch in the script). */
+    #speed-switch {
+      position:fixed; top:50%; right:calc(14px + env(safe-area-inset-right, 0px));
+      transform:translateY(-50%); z-index:100;
+      margin:0; width:3.4em; height:3.6em;   /* the dial, with room for the letters */
+      font-size:var(--carousel-text); line-height:1.2; color:var(--ink);   /* the same size as every text on the carousel */
+      user-select:none; -webkit-user-select:none;
+    }
+    #speed-switch button {
+      position:absolute; left:50%; top:50%; width:1.4em; height:1.2em;
+      margin:-0.6em 0 0 -0.7em;   /* centred on the dial's centre; the script moves it round */
+      font:inherit; color:inherit; background:none; border:0; padding:0;
+      text-align:center; cursor:pointer;
+      will-change:transform, opacity;
+    }
+    #speed-switch button[aria-pressed="true"] { cursor:default; }
+    #speed-switch button:focus-visible { outline:1px solid currentColor; outline-offset:-1px; }
+    @media (max-width:768px) and (hover:none) and (pointer:coarse) {
+      #speed-switch { display:none; }   /* not on mobile */
+    }
+
+    /* pictures appear in order, top to bottom: each one waits, hidden,
+       until it and every picture above it have loaded (see LOADING
+       IN ORDER in the script), then fades in */
+    .carousel-track .image-wrapper:not(.on) { display:none; }
+    .carousel-track .image-wrapper { transition:opacity .6s ease; }
+    .carousel-track .image-wrapper.on:not(.in) { opacity:0; }
+    .side-track > :not(.on) { display:none; }
+
+    /* loading: keep carousel invisible until visible images are ready */
+    #carousel-track { opacity:0; }
+    body.ready #carousel-track { opacity:1; }
+
+    #loader {
+      position:fixed; inset:0; z-index:400;
+      background:#000;
+      pointer-events:none;
+    }
+    body.ready #loader { display:none; }
+  </style>
 </head>
 <body>
-  <div class="ruler" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-  <div class="ruler ruler-v" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-  <p class="bio"><span class="cat"><span class="name-letter">M</span><span class="name-letter">a</span><span class="name-letter">t</span><span class="name-letter">t</span><span class="name-letter">e</span><span class="name-letter">o</span> <span class="name-letter">B</span><span class="name-letter">e</span><span class="name-letter">t</span><span class="name-letter">t</span><span class="name-letter">i</span><span class="name-letter">n</span><span class="name-letter">i</span></span> is an information designer based in Rotterdam, the Netherlands. Trained in graphic design and typography, he has an enduring obsession with maps and the worlds they construct. Through visual and spatial research, he explores the tension between map and territory, questioning how we see, interpret and represent the world.</p>
-  <div class="clients">
-    <p class="cat">Clients:</p>
-    <p><span class="cat">International organizations:</span> <a href="https://www.hrw.org/" target="_blank" rel="noreferrer noopener">Human Rights Watch</a>, <a href="https://www.unosat.org/" target="_blank" rel="noreferrer noopener">United Nations Satellite Center</a></p>
-    <p><span class="cat">Design studios:</span> <a href="https://dotdotdot.it/" target="_blank" rel="noreferrer noopener">DotDotDot</a> (IT), <a href="https://www.non-linear.ch/" target="_blank" rel="noreferrer noopener">Non-Linear</a> (CH), <a href="https://www.studiofolder.it/" target="_blank" rel="noreferrer noopener">Studio Folder</a> (IT)</p>
-    <p><span class="cat">Universities:</span> <a href="https://www.accademiagalli.com/" target="_blank" rel="noreferrer noopener">Accademia Aldo Galli</a> (IT), <a href="https://www.designacademy.nl/" target="_blank" rel="noreferrer noopener">Design Academy Eindhoven</a> (NL), <a href="https://www.polimi.it/" target="_blank" rel="noreferrer noopener">Politecnico di Milano</a> (IT), <a href="https://www.polito.it/" target="_blank" rel="noreferrer noopener">Politecnico di Torino</a> (IT), <a href="https://www.sheffield.ac.uk/" target="_blank" rel="noreferrer noopener">Sheffield University</a> (UK), <a href="https://www.unipi.it/" target="_blank" rel="noreferrer noopener">Università di Pisa</a> (IT), <a href="https://www.uva.nl/" target="_blank" rel="noreferrer noopener">University of Amsterdam</a> (NL)</p>
+<div id="loader"></div>
+<div class="main-layout">
+
+  <div class="scroll-area" id="scroll-area">
+    <div class="carousel-clip" id="carousel-clip">
+      <div class="carousel-track" id="carousel-track">
+        <div id="image-list">
+
+          <div class="image-wrapper" data-device="desktop" data-project="shadow-circuits">
+            <img src="img/mam_1_hor.jpg" loading="lazy">
+            <span class="caption">"I was sure I would find it here". MaMA, Rotterdam (2026) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="dae-catalogue">
+            <img src="img/DAE_1.jpg" loading="lazy">
+            <span class="caption">Design Academy Eindhoven Catalogue. (2026) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="viewing-conditions">
+            <img src="img/viewingconditions_3.jpg" loading="lazy">
+            <span class="caption">"Viewing Conditions". Het Nieuwe Instituut, Rotterdam (2026) </span>
+          </div>
+                    <div class="image-wrapper" data-device="desktop" data-project="a-place">
+            <img src="img/aplace_2.jpg" loading="lazy">
+            <span class="caption">"A Place Without a Name". Metamorphic Zone (2023–now) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="22x11x11">
+            <img src="img/22x11x11_5_rotate.jpg" loading="lazy">
+            <span class="caption">"22.86x11.43x11.43". Palazzo Bronzo, Genoa (2025) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="gas-route">
+            <img src="img/uno.jpg" loading="lazy">
+            <span class="caption">"The Gas Route" (2023) </span>
+          </div>
+                    <div class="image-wrapper" data-device="desktop" data-project="where-to">
+            <img src="img/dem2_1.jpg" loading="lazy">
+            <span class="caption">"Fragments of Democracy II". Circolo del Design, Turin (2025) </span>
+          </div>
+                      <div class="image-wrapper" data-device="desktop" data-project="gas-route">
+            <img src="img/gasroute.png" loading="lazy">
+            <span class="caption">"The Gas Route" (2023) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="ppv">
+            <img src="img/ppv_5.jpg" loading="lazy">
+            <span class="caption">"Perfect-Perfect-View". Oud House, Rotterdam (2025)  </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="agreat">
+            <img src="img/Agreat_2.jpg" loading="lazy">
+            <span class="caption">"A great place for a ride" (2023) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="algo">
+            <img src="img/AlgorithmicMemories_4.png" loading="lazy">
+            <span class="caption">"Algorithmic Memories" (2021) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="fragments-democracy">
+            <img src="img/FragmentsofDemocracy_1_rotate.jpg" loading="lazy">
+            <span class="caption">"Fragments of Democracy I". Bundeskunsthalle, Bonn (2024) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="ilsignore">
+            <img src="img/ilsignore_7.jpg" loading="lazy">
+            <span class="caption">"The Gas Route" (2023) </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop">
+            <img src="img/Anti-NavigationTools_1.png" loading="lazy">
+            
+          </div>
+
+<!--mobile-->
+
+
+
+
+<div class="image-wrapper" data-device="mobile" data-project="shadow-circuits">
+            <img src="img/mam_1-2.jpg" loading="lazy">
+            <span class="caption">"I was sure I would find it here". MaMA Rotterdam (2026) </span>
+          </div>
+                    <div class="image-wrapper" data-device="mobile" data-project="gas-route">
+            <img src="img/gasroute-1.png" loading="lazy">
+            <span class="caption">"The Gas Route" (2023)</span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="viewing-conditions">
+            <img src="img/viewingconditions_12.jpg" loading="lazy">
+            <span class="caption">"Viewing Conditions". Het Nieuwe Instituut, Rotterdam (2026) </span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="dae-catalogue">
+            <img src="img/dae_2.jpg" loading="lazy">
+            <span class="caption">Design Academy Eindhoven Catalogue (2026) </span>
+          </div>
+                    <div class="image-wrapper" data-device="mobile" data-project="ppv">
+            <img src="img/ppv_4.jpg" loading="lazy">
+            <span class="caption">"Perfect-Perfect-View". Oud House, Rotterdam (2025)  </span>
+                    </div>
+
+                    <div class="image-wrapper" data-device="mobile" data-project="algo">
+            <img src="img/AlgorithmicMemories_4 copy.png" loading="lazy">
+            <span class="caption">"Algorithmic Memories". (2021) </span>
+          </div>
+
+          <div class="image-wrapper" data-device="mobile" data-project="22x11x11">
+            <img src="img/22x11x11_6.jpg" loading="lazy">
+            <span class="caption">"22.86x11.43x11.43". Palazzo Bronzo, Genoa (2025) </span>
+          </div>
+                    
+
+
+          <div class="image-wrapper" data-device="mobile" data-project="gas-route">
+            <img src="img/uno_2.jpg" loading="lazy">
+            <span class="caption"> </span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="agreat">
+            <img src="img/Agreat_4.jpg" loading="lazy">
+            <span class="caption">A great place for a ride (2023) </span>
+          </div>
+
+          <div class="image-wrapper" data-device="mobile" data-project="fragments-democracy">
+            <img src="img/FragmentsofDemocracy_1.jpg" loading="lazy">
+            <span class="caption">Fragments of Democracy I (2024) </span>
+          </div>
+          <!-- <div class="image-wrapper" data-project="gas-route">
+            <img src="img/frontiere_7.jpg" loading="lazy">
+            <span class="caption">The Gas Route (2023) </span>
+          </div> -->
+
+
+
+        
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="shadow-circuits">
+            <img src="img/mam_5.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="viewing-conditions">
+            <img src="img/viewingconditions_2.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="22x11x11">
+            <img src="img/22x11x11_6.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="ilsignore">
+            <img src="img/ilsignore_8.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="fragments-democracy">
+            <img src="img/FragmentsofDemocracy_1.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="agreat">
+            <img src="img/Agreat_4.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="where-to">
+            <img src="img/dem2_2.jpg" loading="lazy">
+          </div>
+          <div class="image-wrapper" data-device="mobile">
+            <img src="img/IMG_8522.jpg" loading="lazy">
+          </div> -->
+
+        </div>
+      </div>
+      <!-- mobile: the picture on screen (see MOBILE CAROUSEL) -->
+      <div id="m-bg"></div>
+    </div>
+    <!-- <p id="archive"> <a href="archive/"> Archive </a> </p> -->
+    
   </div>
-  <p class="contact">For inquiries and portfolio write to <br><a href="mailto:mte.bettini@gmail.com">mte.bettini@gmail.com</a></p>
-  <script>
-    const textColors = [
-      "#001eff",
-      "#006b4f",
-      "#ff0000",
-      "#5118d6",
-      "#8a4b08",
-    ];
-    const color = textColors[Math.floor(Math.random() * textColors.length)];
-    document.documentElement.style.setProperty("--text-color", color);
-    document.querySelectorAll(".name-letter").forEach((letter) => {
-      const rotation = Math.random() * 16 - 8;
-      letter.style.setProperty("--rotation", `${rotation}deg`);
+  <!-- <div>
+    <img src="img/graph2.png" style="position:fixed; top:0; right:0; width:80%; height:30%; z-index:1; pointer-events:none; mix-blend-mode:screen;">
+  </div> -->
+
+  <div class="side-panel" id="side-panel">
+    <div class="side-clip" id="side-clip">
+      <div class="side-desc" id="side-desc"></div>
+      <div class="side-track" id="side-track"></div>
+      
+    </div>
+  </div>
+
+</div>
+<div class="thumb-bar" id="thumb-bar"></div>
+<!-- mobile: the thumbnail strip along the top (see MOBILE CAROUSEL) -->
+<nav id="m-thumbs" aria-label="Images"></nav>
+
+<!-- the one footer, shared by the main page and the archive: two lines,
+     highlighted; a click on it opens (or closes) the archive.
+     The contact details are at the bottom of the archive (archMemberships) -->
+<p id="footer">
+  <span class="foot-left"><span class="foot-hl foot-name">Matteo Bettini</span><br><span class="foot-dash foot-dash-desk" aria-hidden="true">--------––-–--–--- ---</span></span>
+  <!-- below, in the captions' size: the practice, the email, the city -->
+  <span class="foot-contact"><span class="foot-pair"><span class="foot-prac">Information design and art practice</span><span class="foot-mail-mob"><br><span class="foot-mail-tilt">mte.bettini@gmail.com</span></span></span><span class="foot-dash-mob"><br><span class="foot-dash" aria-hidden="true">--------––-–--–--- ---</span></span><span class="foot-more"><br>Text me at mte.bettini@gmail.com<br>Rotterdam (NL)</span></span>
+  <!-- <img src="img/thunder-2.png" style="position:revert; bottom:0; left:0; width:100%; height:auto; z-index:1; pointer-events:none; mix-blend-mode:screen;"> -->
+</p>
+
+
+<!-- desktop: the soft shade along the bottom edge -->
+<div id="bottom-shade" aria-hidden="true"></div>
+
+<!-- the Info button: bottom right on desktop, bottom centre on mobile -->
+<p id="archive-float"><a href="#archive" id="info-open">Archive and Info</a></p>
+
+<!-- carousel speed (desktop only): M still, 1 the default, 2 twice as quick,
+     R speed 1 in reverse. The speeds themselves are set in SPEEDS in the script. -->
+<p id="speed-switch" role="group" aria-label="Carousel speed">
+  <!-- <button type="button" data-speed="M" aria-pressed="false" aria-label="Still">M</button> -->
+  <button type="button" data-speed="1" aria-pressed="true"  aria-label="Normal speed">1</button>
+  <button type="button" data-speed="2" aria-pressed="false" aria-label="Twice as quick">2</button>
+  <button type="button" data-speed="R" aria-pressed="false" aria-label="Reverse">r</button>
+</p>
+
+<button type="button" id="arch-close" aria-label="Close the archive">Close</button>
+<div id="archive-view">
+  <!-- phones only: the footer's sentence, above the Year / Type switch -->
+  <p class="arch-intro">Matteo Bettini<br>Information design and art practice</p>
+  <p id="arch-switch"><button type="button" data-mode="year" aria-pressed="false">Year</button> / <button type="button" data-mode="type" aria-pressed="true">Type</button></p>
+  <div id="archive-content" class="by-type"></div>
+</div>
+
+<script src="projects-data.js"></script>
+<script src="archive-data.js"></script>
+<script>
+const PROJECTS = window.PROJECTS;
+
+const carouselClip  = document.getElementById('carousel-clip');
+const carouselTrack = document.getElementById('carousel-track');
+const imageList     = document.getElementById('image-list');
+const sidePanel     = document.getElementById('side-panel');
+const sideClip      = document.getElementById('side-clip');
+const sideTrack     = document.getElementById('side-track');
+const sideDesc      = document.getElementById('side-desc');
+const thumbBar      = document.getElementById('thumb-bar');
+
+/* a phone (or a tablet held upright): a narrow touch screen. A computer
+   always gets the desktop version, however narrow its window, just scaled
+   down. The same condition is used by every phone rule in the CSS above. */
+const PHONE = '(max-width:768px) and (hover:none) and (pointer:coarse)';
+const isMobile = window.matchMedia(PHONE).matches;
+
+/* ── image helpers ───────────────────────────────────────────
+   Normalise an images entry to { src, caption }, and keep a
+   small in-memory cache so a project's images are only ever
+   fetched once. Prefetching on hover/touch means they are
+   usually already in the browser cache by the time the panel
+   opens — so it feels instant. */
+function imgEntry(item) {
+  if (typeof item === 'string') return { src: item, caption: '' };
+  return { src: item.src || '', caption: item.caption || '' };
+}
+
+/* Ordered side-panel content for a project, as a list of
+   { type:'text', text } and { type:'image', src, caption } blocks.
+   Uses `content` when the project has one (set in the project editor);
+   otherwise falls back to body paragraphs followed by images. */
+function splitParas(body) {
+  return String(body || '').replace(/\r/g, '')
+    .split(/\n\s*\n/)
+    .map(par => par.split('\n').map(l => l.trim()).join('\n').trim())
+    .filter(Boolean);
+}
+
+function projectBlocks(p) {
+  if (Array.isArray(p.content)) {
+    return p.content.map(item => {
+      if (typeof item === 'string') return item ? { type:'image', src:item, caption:'' } : null;
+      if (item && typeof item.text === 'string') return item.text.trim() ? { type:'text', text:item.text.trim() } : null;
+      if (item && item.src) return { type:'image', src:item.src, caption:item.caption || '' };
+      return null;
+    }).filter(Boolean);
+  }
+  const blocks = splitParas(p.body).map(text => ({ type:'text', text }));
+  (p.images || []).forEach(item => {
+    const e = imgEntry(item);
+    if (e.src) blocks.push({ type:'image', src:e.src, caption:e.caption });
+  });
+  return blocks;
+}
+
+function projectImages(p) {
+  return projectBlocks(p).filter(b => b.type === 'image');
+}
+
+/* Links inside project text. Paragraphs stay plain text, except for links
+   written as <a href="https://…">words</a> (the project editor's "link"
+   button writes them). Everything else is still escaped.
+   - `src=` is accepted as a slip for `href=`
+   - www.… gets https://, a bare email gets mailto:
+   - #project-key opens that project in the panel
+   - web addresses open in a new tab */
+const TEXT_LINK_RE = /<a\s+(?:[^>]*?\s)?(?:href|src)\s*=\s*(?:"([^"]*)"|'([^']*)'|“([^”]*)”|([^\s>]+))[^>]*>([\s\S]*?)<\/a\s*>/gi;
+
+function linkHref(raw) {
+  const url = String(raw || '').trim();
+  if (!url) return '';
+  if (/^www\./i.test(url)) return 'https://' + url;
+  if (/^[^\s@\/:]+@[^\s@\/]+\.[^\s@\/]+$/.test(url)) return 'mailto:' + url;
+  // only web, mail and phone schemes (no javascript: etc.)
+  if (/^[a-z][a-z0-9+.\-]*:/i.test(url) && !/^(https?|mailto|tel):/i.test(url)) return '';
+  return url;
+}
+
+function textHtml(text) {
+  let out = '', last = 0, m;
+  TEXT_LINK_RE.lastIndex = 0;
+  while ((m = TEXT_LINK_RE.exec(text))) {
+    out += escHtml(text.slice(last, m.index));
+    last = TEXT_LINK_RE.lastIndex;
+    const href  = linkHref([m[1], m[2], m[3], m[4]].find(v => v !== undefined));
+    const label = escHtml(m[5]) || escHtml(href);
+    if (!href) { out += label; continue; }   // no usable address: show the words only
+    const external = /^(https?:)?\/\//i.test(href);
+    out += '<a href="' + escHtml(href).replace(/"/g, '&quot;') + '"'
+         + (external ? ' target="_blank" rel="noopener"' : '') + '>' + label + '</a>';
+  }
+  return out + escHtml(text.slice(last));
+}
+
+function paraHtml(text) {
+  return '<div class="side-para">' + textHtml(text).replace(/\n/g, '<br>') + '</div>';
+}
+
+const _prefetched = new Set();   // project ids already kicked off
+const _imgCache   = new Map();   // src -> Image (keeps it alive/decoded)
+
+function prefetchImg(src) {
+  if (!src || _imgCache.has(src)) return _imgCache.get(src);
+  const i = new Image();
+  i.decoding = 'async';
+  i.src = src;
+  _imgCache.set(src, i);
+  return i;
+}
+
+function prefetchProject(id) {
+  if (!id || _prefetched.has(id)) return;
+  const p = PROJECTS[id];
+  if (!p) return;
+  _prefetched.add(id);
+  projectImages(p).forEach(b => prefetchImg(b.src));
+}
+
+/* The carousel's motion behaves like a small machine: a change of
+   speed doesn't jump, the drive spools up or down with some inertia,
+   overshoots a touch and settles (a damped spring on the speed).
+   Reversing first brakes to a stop, pauses as if changing gear, then
+   drives the other way. Tune the feel here: */
+const DRIVE_STIFFNESS = 7;     // higher = reaches a new speed sooner
+const DRIVE_DAMPING   = 0.62;  // lower = more overshoot and wobble (1 = none)
+const GEAR_PAUSE      = 220;   // ms standing still when changing direction
+
+function makeCarousel(track, getOneH, getLimit, speed) {
+  let pos    = 0;
+  let lastTs = 0;
+  let acc    = 0;
+  let accel  = 0;       // how fast the speed itself is changing
+  let goal   = speed;   // the speed the drive is heading for right now
+  let final  = speed;   // the speed picked in the switch
+  let gearAt = 0;       // when the drive stopped to change direction
+
+  let t0y = 0, tPos0 = 0, tActive = false;
+
+  // looping once every picture is in; until then, stop at the end of
+  // what has loaded and wait there
+  function wrap(p) {
+    const h = getOneH();
+    if (h > 0) return ((p % h) + h) % h;
+    return Math.min(Math.max(0, p), Math.max(0, getLimit()));
+  }
+
+  // returns false when the position was held at the start or the end
+  function commit(p) {
+    pos = wrap(p);
+    track.style.transform = `translateY(${-pos}px)`;
+    return getOneH() > 0 || pos === p;
+  }
+
+  function getPos()  { return pos; }
+  function setPos(p) { commit(p); }
+
+  function addWheel(delta) {
+    commit(pos + delta * 1);
+  }
+
+  function touchStart(e) {
+    tActive = true;
+    t0y     = e.touches[0].clientY;
+    tPos0   = pos;
+  }
+
+  function touchMove(e) {
+    if (!tActive) return;
+    commit(tPos0 + (t0y - e.touches[0].clientY));
+  }
+
+  function touchEnd(e) {
+    tActive = false;
+    return Math.abs(t0y - e.changedTouches[0].clientY);
+  }
+
+  // the finger is off the carousel (a cancelled touch, or a panel opening
+  // over it): let it run on by itself again
+  function release() { tActive = false; }
+
+  function step(ts) {
+    if (!lastTs) { lastTs = ts; return; }
+    const dt = Math.min(ts - lastTs, 32);
+    lastTs = ts;
+    const s = dt / 1000;
+
+    // changing direction: once braked to a standstill, pause, then engage
+    if (goal !== final) {
+      if (Math.abs(speed) < 2 && Math.abs(accel) < 30) {
+        if (!gearAt) gearAt = ts;
+        if (ts - gearAt >= GEAR_PAUSE) { goal = final; gearAt = 0; }
+      } else gearAt = 0;
+    }
+
+    // the drive: a damped spring pulling the speed toward the goal
+    if (speed !== goal || accel !== 0) {
+      const k = DRIVE_STIFFNESS * DRIVE_STIFFNESS, c = 2 * DRIVE_DAMPING * DRIVE_STIFFNESS;
+      accel += (k * (goal - speed) - c * accel) * s;
+      speed += accel * s;
+      if (Math.abs(goal - speed) < 0.05 && Math.abs(accel) < 0.5) { speed = goal; accel = 0; }
+    }
+
+    if (!tActive) {
+      acc += speed * s;
+      if (Math.abs(acc) >= 1) {
+        const px = Math.trunc(acc);
+        acc -= px;
+        // ran into the end of what has loaded: the drive stalls, and
+        // spools up again by itself once there is more to show
+        if (!commit(pos + px)) { speed = 0; accel = 0; acc = 0; }
+      }
+    }
+  }
+
+  function setSpeed(v) {
+    final = v;
+    // going the other way: brake to a stop first (see the gear change above)
+    goal = (v !== 0 && Math.sign(v) !== Math.sign(speed) && Math.abs(speed) > 1) ? 0 : v;
+    gearAt = 0;
+  }
+
+  return { step, touchStart, touchMove, touchEnd, release, setPos, getPos, addWheel, setSpeed };
+}
+
+let mainOneH = 0;
+let panelOpen = false;
+let panelToken = 0;   // bumped on every open/close, so a panel's loading stops when it's replaced
+let currentProject = null;
+
+/* carousel speeds, in pixels per second (negative runs upward), for the
+   1 2 r dial. 1 is the default: the speed the carousel always had. */
+const SPEEDS = { M: 0, 1: 30, 2: 60, R: -30 };
+const DEFAULT_SPEED = '1';
+
+let loadedH = 0;   // height of the pictures shown so far (see LOADING IN ORDER)
+const mainC = makeCarousel(carouselTrack, () => mainOneH,
+                           () => loadedH - window.innerHeight, SPEEDS[DEFAULT_SPEED]);
+
+/* 1 2 r dial (desktop only; hidden on mobile by the CSS).
+   The letters sit evenly round a circle: `rot` is how far it has turned,
+   in letters. The letter at the left point of the circle (the middle,
+   nearest the page) is the speed in use; the others, round toward the
+   edge, are smaller and fainter. The letters stay upright as it turns. */
+(function speedSwitch() {
+  const sw   = document.getElementById('speed-switch');
+  const btns = [...sw.querySelectorAll('button[data-speed]')];
+  const n    = btns.length;
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  let current = btns.find(b => b.dataset.speed === DEFAULT_SPEED);
+  let rot = btns.indexOf(current);
+  let anim = 0, engageTimer = 0, lastWheel = 0;
+
+  function render() {
+    const R = btns[0].offsetHeight * 1.15;        // the dial's radius: a little over a line
+    btns.forEach((b, i) => {
+      const a = (i - rot) * 2 * Math.PI / n;      // 0 = the left point
+      const x = -Math.cos(a) * R * 0.8;           // a touch narrower than tall
+      const y =  Math.sin(a) * R;
+      const front = (1 + Math.cos(a)) / 2;        // 1 at the left point, 0 at the right
+      b.style.transform = `translate(${x}px, ${y}px) scale(${0.7 + 0.3 * front})`;
+      b.style.opacity = 0.35 + 0.65 * front * front;
     });
-  </script>
+  }
+
+  // turn the dial by `d` letters, easing in and settling with a small overshoot
+  function spin(d) {
+    cancelAnimationFrame(anim);
+    const from = rot, to = Math.round(rot) + d;
+    if (reduce.matches) { rot = to; render(); return 0; }
+    const dur = 320 + 90 * Math.abs(d);
+    const t0 = performance.now();
+    const ease = t => { const c = 1.4; t -= 1; return 1 + (c + 1) * t * t * t + c * t * t; };  // ease out, a touch past and back
+    (function frame(now) {
+      const t = Math.min(1, (now - t0) / dur);
+      rot = from + (to - from) * ease(t);
+      render();
+      if (t < 1) anim = requestAnimationFrame(frame);
+    })(t0);
+    return dur;
+  }
+
+  function select(btn, d) {
+    if (btn === current) return;
+    const ci = btns.indexOf(current), ti = btns.indexOf(btn);
+    if (d === undefined) { d = ((ti - ci) % n + n) % n; if (d > n / 2) d -= n; }   // the short way round
+    current = btn;
+    btns.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    const dur = spin(d);
+    clearTimeout(engageTimer);
+    // the drive engages as the dial settles
+    engageTimer = setTimeout(() => mainC.setSpeed(SPEEDS[btn.dataset.speed]), dur * 0.7);
+  }
+  const step = d => select(btns[((btns.indexOf(current) + d) % n + n) % n], d);
+
+  sw.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-speed]');
+    if (btn) select(btn);
+  });
+  // scrolling over the dial turns it one letter at a time
+  sw.addEventListener('wheel', e => {
+    e.preventDefault();
+    const now = performance.now();
+    if (now - lastWheel < 250 || Math.abs(e.deltaY) < 2) return;
+    lastWheel = now;
+    step(e.deltaY > 0 ? 1 : -1);
+  }, { passive: false });
+  sw.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+    if (e.key === 'ArrowUp'   || e.key === 'ArrowLeft')  { e.preventDefault(); step(-1); }
+  });
+  window.addEventListener('resize', render);
+  if (document.fonts) document.fonts.ready.then(render);
+  render();
+})();
+
+let visibleWrappers = [], wrapperOffsets = [];
+// one thumbnail per picture, added as the picture itself appears, so the
+// thumbnails come from the browser's cache instead of competing with the
+// carousel for the connection
+function addThumb(w) {
+  if (isMobile) return;
+  visibleWrappers.push(w);
+  const media = w.querySelector('img') || w.querySelector('video');
+  if (!media) return;
+  const ti = document.createElement('div'); ti.className = 'thumb-item';
+  ti.dataset.index = visibleWrappers.length - 1;
+  const ti2 = document.createElement('img');
+  ti2.src = media.tagName === 'VIDEO' ? (media.poster||'') : media.currentSrc || media.src;
+  ti.appendChild(ti2); thumbBar.appendChild(ti);
+  ti.addEventListener('click', () => mainC.setPos(wrapperOffsets[+ti.dataset.index] || 0));
+}
+
+function calcOffsets() { wrapperOffsets = visibleWrappers.map(w => w.offsetTop); }
+
+function updateThumb() {
+  const H = mainOneH || loadedH;
+  if (isMobile || !H) return;
+  const pos = mainC.getPos() % H;
+  const vc = pos + window.innerHeight / 3;
+  let ai = 0;
+  for (let i = 0; i < wrapperOffsets.length; i++) { if (wrapperOffsets[i] <= vc) ai = i; else break; }
+  thumbBar.querySelectorAll('.thumb-item').forEach((t,i) => t.classList.toggle('active', i===ai));
+}
+
+function nl2br(s) {
+  return (s||'').trim().replace(/\n/g,'<br>');
+}
+
+function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function archiveIsOpen() { return document.body.classList.contains('archive-open'); }
+
+function openPanel(projectId) {
+  if (document.body.classList.contains('archive-open')) closeArchive();   // one panel at a time
+  const p = PROJECTS[projectId];
+  if (!p) return;
+
+  // reset scroll column
+  sideTrack.innerHTML = '';
+  sideClip.scrollTop = 0;
+
+  const titleHtml = '<div class="side-title">'
+      + (p.title ? escHtml(p.title).replace(/\n/g, '<br>') : '')
+      + (p.subtitle ? '<span class="side-subtitle">' + escHtml(p.subtitle) + '</span>' : '')
+      + '</div>';
+
+  let metaHtml = '';
+  (p.meta || []).forEach(line => { metaHtml += escHtml(line) + '<br>'; });
+  // text blocks at the start of the content sit next to the meta, as before;
+  // everything after that is stacked below in the order set in the editor.
+  const blocks = projectBlocks(p);
+  let lead = 0;
+  while (lead < blocks.length && blocks[lead].type === 'text') lead++;
+  const bodyHtml = blocks.slice(0, lead).map(b => paraHtml(b.text)).join('');
+
+  // related works — rounded grey buttons, one per valid related project key.
+  let relatedHtml = '';
+  const relKeys = (p.related || []).filter(k => k && PROJECTS[k] && k !== projectId);
+  if (relKeys.length) {
+    // shorten a long title to its first 3 words + "…" for the pill label
+    const shortLabel = (t) => {
+      const words = t.trim().split(/\s+/);
+      return words.length > 3 ? words.slice(0, 3).join(' ') + '…' : t.trim();
+    };
+    let btns = '';
+    relKeys.forEach(k => {
+      const full = (PROJECTS[k].title || k).replace(/\n/g, ' ').trim();
+      btns += '<span class="related-btn" data-related="' + escHtml(k) + '"'
+            + ' title="' + escHtml(full) + '">'
+            + escHtml(shortLabel(full)) + '</span>';
+    });
+    relatedHtml = '<div class="side-related">'
+        + '<span class="side-related-title">Related works</span>'
+        + '<div class="related-btns">' + btns + '</div>'
+        + '</div>';
+  }
+
+  // mobile: title (left) + meta (right) share a top row; body sits full width below.
+  // desktop: title spans the top, meta (left) + body (right) sit beneath.
+  let dh = '';
+  if (isMobile) {
+    dh += '<div class="side-head">';
+    dh += titleHtml;
+    dh += '<div class="side-meta">' + metaHtml + relatedHtml + '</div>';
+    dh += '</div>';
+    dh += '<div class="side-cols">';
+    dh += '<div class="side-body">' + bodyHtml + '</div>';
+    dh += '</div>';
+  } else {
+    // desktop: title (left) + related works (right) share the top row,
+    // top-aligned; meta (left) + body (right) sit beneath.
+    dh += '<div class="side-toprow">';
+    dh += titleHtml;
+    dh += '<div class="side-related-col">' + relatedHtml + '</div>';
+    dh += '</div>';
+    dh += '<div class="side-cols">';
+    dh += '<div class="side-meta">' + metaHtml + '</div>';
+    dh += '<div class="side-body">' + bodyHtml + '</div>';
+    dh += '</div>';
+  }
+
+  sideDesc.innerHTML = dh;
+
+  // stack the remaining blocks — images and text — in their set order.
+  // They load top to bottom and each appears only once everything above
+  // it is in (see LOADING IN ORDER), so the column only grows downward;
+  // images fade in as they appear.
+  const token = ++panelToken;
+  blocks.slice(lead).forEach(block => {
+    if (block.type === 'text') {
+      // consecutive paragraphs share one text column
+      let box = sideTrack.lastElementChild;
+      if (!box || !box.classList.contains('side-text')) {
+        box = document.createElement('div');
+        box.className = 'side-text';
+        sideTrack.appendChild(box);
+      }
+      box.insertAdjacentHTML('beforeend', paraHtml(block.text));
+      return;
+    }
+
+    const { src, caption } = block;
+    const fig = document.createElement('div');
+    fig.className = 'side-img';
+
+    const img = document.createElement('img');
+    img.decoding = 'async';
+    img.draggable = false;
+    img.dataset.src = src;               // set as src when its turn comes
+    fig.appendChild(img);
+
+    if (caption) {
+      const cap = document.createElement('span');
+      cap.className = 'side-cap';
+      cap.textContent = caption;
+      fig.appendChild(cap);
+    }
+
+    sideTrack.appendChild(fig);
+  });
+
+  loadInOrder([...sideTrack.children], {
+    concurrency: 2,
+    cancelled: () => token !== panelToken,   // another project was opened, or the panel closed
+    show: el => {
+      el.classList.add('on');
+      const img = el.querySelector('img');
+      if (img) { void img.offsetWidth; img.classList.add('loaded'); }   // fade in from 0
+    },
+  });
+
+  // warm the related projects so they open instantly
+  relKeys.forEach(prefetchProject);
+
+  panelOpen = true;
+  mainC.release();   // the carousel keeps running beside the open panel
+  currentProject = projectId;
+  document.body.classList.add('panel-open');
+
+  // give this project its own address: 600mt.com/#<key>
+  if (('#' + projectId) !== location.hash) {
+    history.replaceState(null, '', '#' + projectId);
+  }
+}
+
+function closePanel() {
+  if (!panelOpen) return;
+  panelOpen = false;
+  currentProject = null;
+  panelToken++;
+  document.body.classList.remove('panel-open');
+  if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+  setTimeout(() => {
+    if (!panelOpen) {
+      sideTrack.innerHTML = '';
+      sideDesc.innerHTML = '';
+      sideClip.scrollTop = 0;
+    }
+  }, 300);
+}
+
+/* clicking a "Related works" button opens that project's panel */
+sideDesc.addEventListener('click', e => {
+  const btn = e.target.closest('.related-btn');
+  if (!btn) return;
+  const key = btn.dataset.related;
+  if (key && PROJECTS[key]) { sideClip.scrollTop = 0; openPanel(key); }
+});
+
+/* ── URL routing: 600mt.com/#<key> opens a project directly ────
+   Reflects the open project in the address bar (see openPanel /
+   closePanel) and reacts to a hash present on load or changed via
+   the browser's back/forward buttons. */
+function projectFromHash() {
+  const key = decodeURIComponent((location.hash || '').replace(/^#/, '')).trim();
+  return key && PROJECTS[key] ? key : null;
+}
+function syncPanelToHash() {
+  const key = projectFromHash();
+  if (key) {
+    if (key !== currentProject) { sideClip.scrollTop = 0; openPanel(key); }
+  } else if (panelOpen) {
+    closePanel();
+  }
+}
+window.addEventListener('hashchange', syncPanelToHash);
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+
+/* ── swipe right on the panel to close ─────────────────────── */
+let swX = 0, swY = 0, swActive = false, swScrollTop = 0;
+sidePanel.addEventListener('touchstart', e => {
+  swActive = true;
+  swX = e.touches[0].clientX;
+  swY = e.touches[0].clientY;
+  swScrollTop = sideClip.scrollTop;
+}, {passive:true});
+sidePanel.addEventListener('touchend', e => {
+  if (!swActive) return;
+  swActive = false;
+  if (window.matchMedia(PHONE).matches) return;   // phones: pull it down instead (see makeSheet)
+  const dx = e.changedTouches[0].clientX - swX;
+  const dy = e.changedTouches[0].clientY - swY;
+  // horizontal rightward swipe, not a vertical scroll of the content
+  // not while text is being selected (dragging a selection handle to the right)
+  const sel = window.getSelection && String(window.getSelection());
+  if (sel) return;
+  if (dx > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) closePanel();
+}, {passive:true});
+
+/* ── carousel animation loop ──────────────────────────────────
+   The loop period height (mainOneH) is measured once every picture
+   is in and the list has been duplicated (see LOADING IN ORDER),
+   then locked, so the wrap point never moves while pictures arrive.
+   Until then mainOneH stays 0 and the carousel doesn't loop: it
+   stops at the end of what has loaded. A resize re-measures it. */
+let heightLocked = false;
+let loopReady = false;
+function lockHeight() {
+  if (!loopReady) return;
+  const liveH = carouselTrack.children[0] ? carouselTrack.children[0].offsetHeight : 0;
+  if (liveH > 0) {
+    if (liveH !== mainOneH) { mainOneH = liveH; mainC.setPos(mainC.getPos()); }
+    heightLocked = true;
+  }
+}
+function step(ts) {
+  if (!heightLocked) lockHeight();
+  mainC.step(ts);
+  updateThumb();
+  updateCaption();
+  requestAnimationFrame(step);
+}
+
+/* ── the caption at the middle of the screen ──────────────────
+   Each frame: which picture covers the middle line of the carousel?
+   When that changes, its caption fades in on one layer while the
+   previous one fades out on the other. */
+const capLayers = [0, 1].map(() => {
+  const el = document.createElement('span');
+  el.className = 'carousel-cap';
+  carouselClip.appendChild(el);
+  return el;
+});
+let capFront = 0, capWrap = null;
+function updateCaption() {
+  const r = carouselClip.getBoundingClientRect();
+  const mid = r.top + r.height / 2;
+  let hit = null;
+  for (const w of carouselTrack.querySelectorAll('.image-wrapper.on')) {
+    const b = w.getBoundingClientRect();
+    if (b.top <= mid && b.bottom > mid) { hit = w; break; }
+  }
+  if (hit === capWrap) return;
+  capWrap = hit;
+  const src = hit && hit.querySelector('.caption');
+  const html = src ? src.innerHTML.trim() : '';
+  const front = capLayers[capFront];
+  if (html && front.classList.contains('show') && front.innerHTML === html) return;  // same caption: no fade
+  front.classList.remove('show');
+  capFront ^= 1;
+  const next = capLayers[capFront];
+  next.innerHTML = html;
+  if (html) next.classList.add('show');
+}
+
+/* ── prefetch a project's images before the panel opens ────── */
+// desktop: hovering a project image
+carouselClip.addEventListener('mousemove', e => {
+  const w = e.target.closest && e.target.closest('.image-wrapper.has-project');
+  if (w) prefetchProject(w.dataset.project);
+});
+// mobile: at the very start of a touch (fires before the tap resolves)
+carouselClip.addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  const el = document.elementFromPoint(t.clientX, t.clientY);
+  const w = el && el.closest('.image-wrapper.has-project');
+  if (w) prefetchProject(w.dataset.project);
+}, {passive:true});
+
+carouselClip.addEventListener('touchstart', e => mainC.touchStart(e), {passive:true});
+carouselClip.addEventListener('touchmove',  e => mainC.touchMove(e),  {passive:true});
+// phones sometimes end a touch with a cancel instead (e.g. when a panel
+// opens under the finger): without this the carousel would stay stopped
+carouselClip.addEventListener('touchcancel', () => mainC.release(), {passive:true});
+// phones: the share of the screen, from the bottom up, where a tap opens
+// the archive instead of a project
+const ARCHIVE_TAP_ZONE = 0.2;
+carouselClip.addEventListener('touchend',   e => {
+  if (isMobile) { mTouchEnd(e); return; }   // phones: see MOBILE CAROUSEL
+  const dy = mainC.touchEnd(e);
+  if (dy < 10) {
+    if (archiveIsOpen()) { closeArchive(); return; }   // a tap on the carousel first just closes the archive
+    if (panelOpen) { closePanel(); return; }
+    const touch = e.changedTouches[0];
+    // a tap anywhere in the lower part of the screen opens the archive,
+    // so it's easy to reach with a thumb (see ARCHIVE_TAP_ZONE)
+    if (touch.clientY > window.innerHeight * (1 - ARCHIVE_TAP_ZONE)) { openArchive(); return; }
+    const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    const w  = el && el.closest('.image-wrapper.has-project');
+    if (w) openPanel(w.dataset.project);
+  }
+}, {passive:true});
+
+let mDragActive = false, mDragY = 0, mDragPos0 = 0;
+carouselClip.addEventListener('mousedown', e => {
+  if (isMobile) return;
+  mDragActive = true; mDragY = e.clientY; mDragPos0 = mainC.getPos();
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!mDragActive) return;
+  mainC.setPos(mDragPos0 + (mDragY - e.clientY));
+});
+document.addEventListener('mouseup', e => {
+  if (!mDragActive) return;
+  const wasDrag = Math.abs(mDragY - e.clientY) > 4;
+  mDragActive = false;
+  if (!wasDrag) {
+    if (archiveIsOpen()) { closeArchive(); return; }   // a click on the carousel first just closes the archive
+    if (panelOpen) { closePanel(); return; }
+    const w = e.target.closest('.image-wrapper.has-project');
+    if (w) openPanel(w.dataset.project);
+  }
+});
+
+carouselClip.addEventListener('wheel', e => {
+  e.preventDefault();
+  mainC.addWheel(e.deltaY);
+}, {passive: false});
+
+document.addEventListener('contextmenu', e => {
+  // the menu (Copy) still works on text in the archive and the project panel, not on pictures
+  if (e.target.closest && e.target.closest('#archive-view, .side-panel') && !e.target.closest('img, video')) return;
+  e.preventDefault();
+});
+document.addEventListener('dragstart',   e => e.preventDefault());
+
+const videoObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    const video = entry.target;
+    if (entry.isIntersecting) {
+      if (video.readyState === 0) video.load();
+      video.play().catch(() => {});
+    } else {
+      video.pause();
+    }
+  });
+}, { rootMargin: '100% 0px' });
+
+/* ── LOADING IN ORDER ─────────────────────────────────────────
+   On a slow connection pictures arrive in any order, and a picture
+   with nothing loaded yet takes no space: one that arrives early would
+   show up too high, then get pushed down when the one above it lands.
+   So pictures are fetched a few at a time, top to bottom, and each is
+   shown only once it AND everything above it are in (downloaded and
+   decoded). The column only ever grows at the bottom, nothing on
+   screen moves, and the first pictures arrive sooner because they
+   don't share the connection with all the others.
+   Used for the carousel and for the side panel. */
+const PICTURE_TIMEOUT = 30000;   // ms: a picture that never arrives stops holding up the rest
+
+function mediaReady(el) {
+  const img = el.matches('img') ? el : el.querySelector('img');
+  const video = !img && (el.matches('video') ? el : el.querySelector('video'));
+  let wait;
+  if (img) {
+    if (img.loading === 'lazy') img.loading = 'eager';   // its turn: fetch it now
+    if (!img.getAttribute('src') && img.dataset.src) img.src = img.dataset.src;
+    wait = imgDone(img).then(() => img.decode ? img.decode().catch(() => {}) : null);
+  } else if (video) {
+    wait = new Promise(res => {
+      if (video.readyState >= 1) return res();
+      video.addEventListener('loadedmetadata', res, { once:true });
+      video.addEventListener('error', res, { once:true });
+      if (video.preload !== 'auto') video.preload = 'metadata';   // a looping clip loads fully, to play smoothly
+      video.load();
+    });
+  } else {
+    return Promise.resolve();   // text: ready as soon as it's its turn
+  }
+  return Promise.race([wait, new Promise(res => setTimeout(res, PICTURE_TIMEOUT))]);
+}
+
+function loadInOrder(items, { concurrency = 3, show, done, cancelled = () => false } = {}) {
+  const ready = items.map(() => false);
+  let shown = 0, next = 0, busy = 0;
+  function showReady() {
+    while (shown < items.length && ready[shown]) show(items[shown], shown++);
+    if (shown === items.length && done) { done(); done = null; }
+  }
+  function pump() {
+    if (cancelled()) return;
+    while (busy < concurrency && next < items.length) {
+      const i = next++;
+      busy++;
+      mediaReady(items[i]).then(() => {
+        busy--;
+        if (cancelled()) return;
+        ready[i] = true;
+        showReady();
+        pump();
+      });
+    }
+    showReady();
+  }
+  pump();
+}
+
+// the carousel pictures this screen size uses, top to bottom
+const ownWrappers = [...imageList.querySelectorAll('.image-wrapper')].filter(w => {
+  const d = w.dataset.device || 'both';
+  return d === 'both' || (d === 'mobile' && isMobile) || (d === 'desktop' && !isMobile);
+});
+ownWrappers.forEach(w => { if (w.dataset.project) w.classList.add('has-project'); });
+// to disable the panels
+
+function duplicateMain() {
+  const clone = imageList.cloneNode(true);
+  clone.id = 'image-list-clone';
+  clone.querySelectorAll('video').forEach(v => videoObserver.observe(v));
+  carouselTrack.appendChild(clone);
+}
+
+function measure() {
+  loadedH = imageList.offsetHeight;
+  if (loopReady) mainOneH = loadedH;
+  calcOffsets();
+}
+
+let revealed = false;
+function reveal() {
+  if (revealed) return;
+  revealed = true;
+  requestAnimationFrame(step);
+  document.body.classList.add('ready');
+  syncPanelToHash();       // deep link: 600mt.com/#<key> opens that project
+}
+
+/* ── MOBILE CAROUSEL (from index-static.html) ─────────────────
+   Phones show one picture at a time, filling the screen, with a strip
+   of thumbnails along the top. The pictures and their projects are the
+   mobile ones in the list above (data-device="mobile").
+   A tap on the picture opens its project; a tap in the lower part of
+   the screen opens the archive (ARCHIVE_TAP_ZONE); a swipe left or right
+   goes to the next or previous picture; a thumbnail shows its picture. */
+/* the pictures also change by themselves, slowly: every M_INTERVAL ms.
+   Changing one by hand (thumbnail, swipe) starts the wait over; the timer
+   holds while a project panel or the archive is open. */
+const M_INTERVAL = 7000;
+const M_SIDE_ZONE = 0.2;   // the share of the width, at each side, where a tap changes the picture
+const mBg = document.getElementById('m-bg');
+const mThumbs = document.getElementById('m-thumbs');
+let mItems = [], mThumbEls = [], mCurrent = 0, mShownAt = 0;
+
+function mStart() {
+  document.body.classList.add('m-static');
+  mItems = ownWrappers.map(w => {
+    const media = w.querySelector('img') || w.querySelector('video');
+    const src = media ? (media.tagName === 'VIDEO' ? media.poster : media.getAttribute('src')) : '';
+    return { src, project: w.dataset.project || '' };
+  }).filter(it => it.src);
+  if (!mItems.length) { reveal(); return; }
+
+  mThumbEls = mItems.map((it, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', `Show image ${i + 1}`);
+    const im = document.createElement('img');
+    im.src = it.src; im.alt = ''; im.draggable = false;
+    btn.appendChild(im);
+    btn.addEventListener('click', () => mShow(i));
+    mThumbs.appendChild(btn);
+    return btn;
+  });
+
+  // a random picture first; the page shows once it's in
+  mCurrent = Math.floor(Math.random() * mItems.length);
+  const first = new Image();
+  first.onload = first.onerror = () => { reveal(); idlePrefetchProjects(); };
+  first.src = mItems[mCurrent].src;
+  mShow(mCurrent);
+  mItems.forEach(it => prefetchImg(it.src));   // preload them all
+  setInterval(() => {
+    // paused: the wait starts over once it's back
+    if (panelOpen || archiveIsOpen() || document.hidden) { mShownAt = Date.now(); return; }
+    if (Date.now() - mShownAt >= M_INTERVAL) mShow(mCurrent + 1);
+  }, 500);
+}
+
+function mShow(index) {
+  mCurrent = ((index % mItems.length) + mItems.length) % mItems.length;
+  mShownAt = Date.now();
+  const it = mItems[mCurrent];
+  mBg.style.backgroundImage = `url('${it.src}')`;
+  if (it.project) prefetchProject(it.project);
+  mFloatInk(it.src);
+  mThumbEls.forEach((el, i) => el.classList.toggle('active', i === mCurrent));
+  // keep the active thumbnail in view when the strip overflows
+  const t = mThumbEls[mCurrent];
+  if (t && mThumbs.scrollWidth > mThumbs.clientWidth) {
+    const left = t.offsetLeft - (mThumbs.clientWidth - t.offsetWidth) / 2;
+    mThumbs.scrollTo({ left, behavior: 'smooth' });
+  }
+}
+
+/* "Archive and Info" turns black when the picture behind it is light
+   (from index-static.html's footer colour): the average brightness of
+   the part of the picture under the button decides. Worked out once per picture. */
+const mFloat = document.getElementById('archive-float');
+const mInk = new Map();   // src -> '#000' or '' (the usual ink)
+const mCanvas = document.createElement('canvas');
+function mFloatInk(src) {
+  if (mInk.has(src)) { mFloat.style.color = mInk.get(src); return; }
+  const img = new Image();
+  img.onload = () => {
+    const sw = img.naturalWidth, sh = img.naturalHeight;
+    const vw = window.innerWidth, vh = window.innerHeight;
+    // the picture covers the screen (background-size:cover): where it's drawn
+    const scale = Math.max(vw / sw, vh / sh);
+    const ox = (sw * scale - vw) / 2, oy = (sh * scale - vh) / 2;
+    // the button's area, with a little room around it
+    const r = mFloat.getBoundingClientRect();
+    const x = Math.max(0, r.left - 20), y = Math.max(0, r.top - 10);
+    const w = Math.min(vw, r.right + 20) - x, h = Math.min(vh, r.bottom + 10) - y;
+    let ink = '';
+    try {
+      mCanvas.width = 32; mCanvas.height = 8;
+      const ctx = mCanvas.getContext('2d');
+      ctx.drawImage(img, (x + ox) / scale, (y + oy) / scale, w / scale, h / scale, 0, 0, 32, 8);
+      const d = ctx.getImageData(0, 0, 32, 8).data;
+      let lum = 0;
+      for (let i = 0; i < d.length; i += 4) lum += 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+      if (lum / (d.length / 4) > 140) ink = '#000';
+    } catch (e) {}
+    mInk.set(src, ink);
+    if (mItems[mCurrent] && mItems[mCurrent].src === src) mFloat.style.color = ink;
+  };
+  img.src = src;
+}
+
+let mX0 = 0, mY0 = 0;
+carouselClip.addEventListener('touchstart', e => {
+  mX0 = e.touches[0].clientX; mY0 = e.touches[0].clientY;
+}, { passive:true });
+
+function mTouchEnd(e) {
+  mainC.release();
+  const t = e.changedTouches[0];
+  const dx = t.clientX - mX0, dy = t.clientY - mY0;
+  if (archiveIsOpen()) { closeArchive(); return; }   // a tap first just closes the archive
+  if (panelOpen) { closePanel(); return; }
+  // a swipe sideways: the next or previous picture
+  if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) { mShow(mCurrent + (dx < 0 ? 1 : -1)); return; }
+  if (Math.abs(dx) >= 10 || Math.abs(dy) >= 10) return;
+  // a tap: the lower part of the screen opens the archive, the far left and
+  // right edges go to the previous / next picture, the rest opens the project
+  if (t.clientY > window.innerHeight * (1 - ARCHIVE_TAP_ZONE)) { openArchive(); return; }
+  if (t.clientX < window.innerWidth * M_SIDE_ZONE) { mShow(mCurrent - 1); return; }
+  if (t.clientX > window.innerWidth * (1 - M_SIDE_ZONE)) { mShow(mCurrent + 1); return; }
+  const p = mItems[mCurrent] && mItems[mCurrent].project;
+  if (p) openPanel(p);
+}
+
+if (isMobile) mStart();
+else loadInOrder(ownWrappers, {
+  concurrency: 3,
+  show: w => {
+    w.classList.add('on');
+    if (revealed) { void w.offsetWidth; }   // let it fade in from 0
+    w.classList.add('in');
+    const video = w.querySelector('video');
+    if (video) videoObserver.observe(video);
+    addThumb(w);
+    measure();
+    // the first screenful is in: lift the black loader
+    if (loadedH >= window.innerHeight) reveal();
+  },
+  done: () => {
+    reveal();
+    duplicateMain();          // every picture is in: now the list can loop
+    loopReady = true;
+    measure();
+    heightLocked = false;     // lock the loop height on the next frame
+    idlePrefetchProjects();   // only now warm the project images, so they
+                              // never compete with the carousel
+  },
+});
+// a very slow connection: show what's there after a while; the rest
+// keeps appearing, in order, at the bottom
+setTimeout(reveal, 5000);
+
+function imgDone(img) {
+  return new Promise(res => {
+    if (img.complete && img.naturalHeight > 0) return res();
+    img.addEventListener('load',  res, {once:true});
+    img.addEventListener('error', res, {once:true});
+  });
+}
+
+/* When the browser is idle, quietly prefetch the FIRST image of each
+   project so the panel's top image is instant even without a hover
+   (e.g. on mobile taps). Full sets still load on hover/touch/open. */
+function idlePrefetchProjects() {
+  const ids = Object.keys(PROJECTS || {});
+  let n = 0;
+  const run = () => {
+    if (n >= ids.length) return;
+    const p = PROJECTS[ids[n++]];
+    const first = p && projectImages(p)[0];
+    if (first) prefetchImg(first.src);
+    schedule();
+  };
+  const schedule = () => {
+    if ('requestIdleCallback' in window) requestIdleCallback(run, { timeout:1500 });
+    else setTimeout(run, 300);
+  };
+  schedule();
+}
+
+// on resize, re-measure the loop height once (unlock, then relock next frame)
+window.addEventListener('resize', () => { measure(); heightLocked = false; });
+
+/* ── ARCHIVE VIEW ── */
+const archiveData = (window.ARCHIVE || []).slice();   // from archive-data.js (edit it with project-editor.html)
+
+archiveData.sort((a, b) => {
+  const yearA = parseInt(a.year.split('/')[0]) || 0;
+  const yearB = parseInt(b.year.split('/')[0]) || 0;
+  if (yearB !== yearA) return yearB - yearA;
+  return (b.month || 0) - (a.month || 0);
+});
+
+function archIsUpcoming(item) {
+  const now = new Date();
+  const cy = now.getFullYear(), cm = now.getMonth() + 1;
+  const iy = parseInt(item.year.split('/')[0].split('-')[0]) || 0;
+  const im = item.month || 1;
+  return iy > cy || (iy === cy && im > cm);
+}
+function archGetLink(item) {
+  if (item.link && item.link.trim()) return item.link;
+  const m = item.name.match(/href="(https?:[^"]+)"/);
+  return m ? m[1] : null;
+}
+/* how each type reads inside an entry: "exhibition at <venue>".
+   Types missing from this list just show their own name. */
+const archPhrase = {
+  exhibition:'exhibition at', workshop:'workshop at', residency:'residency at',
+  presentation:'presentation at', lecture:'lecture at', teaching:'teaching at',
+  funding:'grant from', writing:'text for', 'web-site':'website for', projects:'project at',
+  'graphic-design':'',   // just the client's name
+};
+
+/* "2022-2025" → "2022–25", "2020/21" → "2020–21", so ranges fit the year column */
+function archYear(item) {
+  return String(item.year).replace(/^(\d{4})[-\/](\d{2})?(\d{2})$/, '$1–$3');
+}
+
+/* Venue, city and collaborators for one entry.
+   An item can set `venue` and `with` explicitly; otherwise they are read
+   from `details` ("Venue. Collaborator: X" or "Venue, together with X"). */
+function archParts(item) {
+  let venue, withs;
+  if (item.venue !== undefined || item.with !== undefined) {
+    venue = item.venue || '';
+    withs = item.with || '';
+  } else {
+    const d = String(item.details || '').replace(/<[^>]+>/g, '').trim();
+    const m = d.match(/^(.*?)[.,]?\s*(?:collaborators?:|together with)\s*(.*)$/i);
+    venue = m ? m[1].trim() : d;
+    withs = m ? m[2].trim() : '';
+  }
+  // city without its country code, left out when the venue already names it
+  let city = String(item.location || '').replace(/,\s*[A-Z]{2}$/, '').trim();
+  if (city && venue.includes(city)) city = '';
+  return { venue, city, withs };
+}
+
+/* the title, linked when the entry has a link */
+function archTitle(item) {
+  const name = item.name.replace(/<[^>]+>/g, '');
+  const link = archGetLink(item);
+  return link ? `<a href="${link}" target="_blank" rel="noopener">${name}</a>` : name;
+}
+
+/* two lines per entry: the title, then everything else indented below it.
+   The second line starts with a capital, since it's a line of its own.
+   A part given as { with: text } (the collaborators) is wrapped in its own
+   span, so it can be dropped when it would break the line (see archFitWiths). */
+function archLines(item, parts) {
+  let meta = '';
+  parts.filter(Boolean).forEach((p, i) => {
+    let t = typeof p === 'object' ? p.with : p;
+    if (i === 0) t = t.charAt(0).toUpperCase() + t.slice(1);
+    const sep = i ? ', ' : '';
+    meta += typeof p === 'object' ? `<span class="arch-with">${sep}${t}</span>` : sep + t;
+  });
+  return `<div class="arch-title">${archTitle(item)}</div>`
+       + (meta ? `<div class="arch-meta">${meta}</div>` : '');
+}
+
+/* year view:  Title | Exhibition at Venue, City, with X
+   (the year is said once, above its entries, in the year column) */
+/* on a phone the details are kept simple (no city, no collaborators,
+   no "exhibition at"), so each entry's details fit on one line */
+const archSimple = () => window.matchMedia(PHONE).matches || window.matchMedia('(pointer: coarse) and (max-height: 500px)').matches;   // phones, also held sideways
+
+function archEntryByYear(item) {
+  const { venue, city, withs } = archParts(item);
+  // an item can name its own role ("Art Direction"), read as "<role> for <client>"
+  // or its own phrase ("tutoring at"), in place of its type's
+  const phrase = item.phrase ? item.phrase
+               : item.role ? item.role + ' for'
+               : item.type in archPhrase ? archPhrase[item.type] : (item.type || '');
+  // phone: just the venue (or the type when there's none), to stay on one line
+  if (archSimple()) return archLines(item, [venue || phrase.split(' ')[0], archIsUpcoming(item) && 'upcoming']);
+  const first = phrase ? (venue ? phrase + ' ' + venue : phrase.split(' ')[0]) : venue;
+  return archLines(item, [first, city, withs && { with: 'with ' + withs },
+                          archIsUpcoming(item) && 'upcoming']);
+}
+
+/* type view:  Title | Venue, City, with X | 2025
+   (the type is already the heading) */
+function archEntryByType(item) {
+  const { venue, city, withs } = archParts(item);
+  // phone: just the venue, to stay on one line
+  if (archSimple()) return archLines(item, [venue, archIsUpcoming(item) && 'upcoming'])
+                         + `<div class="arch-year">${archYear(item)}</div>`;
+  return archLines(item, [venue, city, withs && { with: 'with ' + withs },
+                          archIsUpcoming(item) && 'upcoming'])
+       + `<div class="arch-year">${archYear(item)}</div>`;
+}
+
+/* the type groups, in this order. Rename or reorder freely;
+   a type that isn't listed here gets its own group at the end. */
+const archGroupDefs = [
+  { label: 'Exhibitions',             types: ['exhibition'] },
+  { label: 'Workshops, Teaching',     types: ['workshop', 'teaching'] },
+  { label: 'Presentations, Lectures', types: ['presentation', 'lecture'] },
+  { label: 'Residencies, Funding',    types: ['residency', 'funding'] },
+  { label: 'Projects',                types: ['projects'] },
+  { label: 'Web sites',               types: ['web-site'] },
+  { label: 'Graphic & Information Design', types: ['graphic-design'] },
+  { label: 'Writing',                 types: ['writing'] },
+];
+
+/* [{ label, items }] for the chosen view. archiveData is sorted newest
+   first, so entries stay in date order inside every group. */
+function archGroups(mode) {
+  const items = archiveData.filter(i => i.showInAll !== false);
+  if (mode === 'type') {
+    const known = archGroupDefs.flatMap(g => g.types);
+    const extra = [...new Set(items.map(i => i.type).filter(t => !known.includes(t)))]
+      .map(t => ({ label: t, types: [t] }));
+    return archGroupDefs.concat(extra)
+      .map(g => ({ label: g.label, items: items.filter(i => g.types.includes(i.type)) }))
+      .filter(g => g.items.length);
+  }
+  const groups = [];
+  items.forEach(item => {
+    const y = archYear(item);
+    const last = groups[groups.length - 1];
+    if (last && last.label === y) last.items.push(item);
+    else groups.push({ label: y, items: [item] });
+  });
+  return groups;
+}
+
+/* the lines at the end of the archive, in both views, centred.
+   Each line: its opening words, then its names (joined with "and").
+   Fill in `link` to make the name a link; leave it '' for plain text. */
+const archMemberships = window.ARCHIVE_CLOSING || [];   // from archive-data.js
+function archMembershipsHtml() {
+  const linked = m => !m.link ? m.name
+    : m.link.startsWith('mailto:') ? `<a href="${m.link}">${m.name}</a>`   // an email opens the mail app, no new tab
+    : `<a href="${m.link}" target="_blank" rel="noopener">${m.name}</a>`;
+  return '<div class="arch-members">'
+       + archMemberships.map(l => `<div>${l.lead} ${l.names.map(linked).join(' and ')}</div>`).join('')
+       + '</div>';
+}
+
+let archMode = 'type';   // the view the archive opens on: 'type' or 'year'
+function buildArchive() {
+  const content = document.getElementById('archive-content');
+  const entry = archMode === 'type' ? archEntryByType : archEntryByYear;
+  let ah = '';
+  archGroups(archMode).forEach(g => {
+    ah += `<div class="arch-group"><span>${g.label}</span><div>`;
+    g.items.forEach(item => { ah += `<div class="arch-entry${archIsUpcoming(item) ? ' is-upcoming' : ''}">${entry(item)}</div>`; });
+    ah += '</div></div>';
+  });
+  content.className = 'by-' + archMode;
+  content.innerHTML = ah + archMembershipsHtml();
+  archFitWiths();
+}
+
+/* the collaborators are left out of any entry where they would make the
+   details break onto a second line. Needs the panel on screen to measure,
+   so it runs again when the archive opens and when the window is resized. */
+function archFitWiths() {
+  if (!archiveIsOpen()) return;
+  const withs = [...document.querySelectorAll('#archive-content .arch-with')];
+  withs.forEach(w => { w.hidden = false; });
+  const breaking = withs.filter(w => {
+    const meta = w.closest('.arch-meta');
+    return meta.offsetHeight > parseFloat(getComputedStyle(meta).lineHeight) * 1.5;
+  });
+  breaking.forEach(w => { w.hidden = true; });
+}
+window.addEventListener('resize', archFitWiths);
+
+/* Year / Type switch */
+document.getElementById('arch-switch').addEventListener('click', e => {
+  const btn = e.target.closest('button[data-mode]');
+  if (!btn || btn.dataset.mode === archMode) return;
+  archMode = btn.dataset.mode;
+  document.querySelectorAll('#arch-switch button').forEach(b =>
+    b.setAttribute('aria-pressed', String(b.dataset.mode === archMode)));
+  buildArchive();
+  document.getElementById('archive-view').scrollTop = 0;
+});
+
+// one panel at a time: opening the archive closes the project panel,
+// and opening a project closes the archive (see openPanel)
+let archOpenedAt = 0;
+function openArchive() {
+  archOpenedAt = Date.now();
+  mainC.release();   // the carousel keeps running beside the open archive
+  closePanel();
+  buildArchive();
+  document.body.classList.add('archive-open');
+  archFitWiths();
+  document.getElementById('archive-view').scrollTop = 0;
+}
+function closeArchive() {
+  document.body.classList.remove('archive-open');
+}
+
+// ?picker in the address: a small colour picker in the top right corner
+// to try text colours live (it sets --ink); nothing is saved
+(function () {
+  if (!new URLSearchParams(location.search).has('picker')) return;
+  const root = document.documentElement;
+  const now = getComputedStyle(root).getPropertyValue('--ink').trim() || '#ad800f';
+  const box = document.createElement('label');
+  box.style.cssText = 'position:fixed;top:10px;right:10px;z-index:1000;display:flex;gap:6px;align-items:center;'
+    + 'background:#fff;color:#000;font:12px/1 Arial,sans-serif;padding:6px 8px;border-radius:6px;';
+  const input = document.createElement('input');
+  input.type = 'color'; input.value = now;
+  const code = document.createElement('span');
+  code.textContent = now;
+  input.addEventListener('input', () => {
+    root.style.setProperty('--ink', input.value);
+    code.textContent = input.value;   // copy this into --ink to keep it
+  });
+  box.append(input, code);
+  document.body.appendChild(box);
+})();
+
+// desktop, window filling the screen: mark it, so the texts over the
+// carousel get bigger (see :root.full-window). Rechecked on every resize,
+// so it follows going full screen, maximising or shrinking the window.
+(function fullWindow() {
+  const desktop = window.matchMedia('(pointer: fine) and (min-width: 769px)');
+  function check() {
+    const full = desktop.matches
+      && window.innerWidth  >= screen.availWidth  - 40
+      && window.innerHeight >= screen.availHeight - 160;   // room for tabs and the address bar
+    const root = document.documentElement;
+    if (root.classList.contains('full-window') === full) return;
+    root.classList.toggle('full-window', full);
+    window.dispatchEvent(new Event('resize'));   // let the speed dial re-measure at the new size
+  }
+  check();
+  window.addEventListener('resize', check);
+})();
+
+// the footer catches clicks (so the picture behind it doesn't open),
+// but scrolling over it still moves the carousel
+document.getElementById('footer').addEventListener('wheel', e => {
+  e.preventDefault();
+  mainC.addWheel(e.deltaY);
+}, { passive: false });
+
+// only "Archive and Info" opens the archive (and closes it again)
+const toggleArchive = () => { if (archiveIsOpen()) closeArchive(); else openArchive(); };
+document.getElementById('info-open').addEventListener('click', e => { e.preventDefault(); toggleArchive(); });
+// a click anywhere outside the archive panel closes it (desktop: the
+// carousel side); the click is used up, so it doesn't also open a project
+document.addEventListener('click', e => {
+  if (!document.body.classList.contains('archive-open')) return;
+  if (Date.now() - archOpenedAt < 600) return;   // the click that follows the tap which just opened it
+  if (e.target.closest('#archive-view, #archive-float')) return;   // the footer opens/closes it itself; its links still work
+  e.preventDefault();
+  e.stopPropagation();
+  closeArchive();
+}, true);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('archive-open')) closeArchive(); });
+document.getElementById('arch-close').addEventListener('click', closeArchive);
+// phones: the archive and project sheets follow the finger when pulled down
+// from the top of their content (it can be held half way). On release it either
+// springs back up or slides away and closes: it closes when pulled down
+// more than a third of its height, or flicked down quickly.
+function makeSheet(sheet, scroller, isOpen, close) {
+  const mobile = window.matchMedia(PHONE);
+  let startY = 0, lastY = 0, lastT = 0, speed = 0, dragging = false, tracking = false;
+
+  sheet.addEventListener('touchstart', e => {
+    if (!mobile.matches || !isOpen()) return;
+    tracking = true; dragging = false;
+    startY = lastY = e.touches[0].clientY; lastT = performance.now(); speed = 0;
+  }, { passive: true });
+
+  sheet.addEventListener('touchmove', e => {
+    if (!tracking) return;
+    const y = e.touches[0].clientY, now = performance.now();
+    if (!dragging) {
+      // start pulling only when the content is at its top and the finger goes down
+      if (scroller.scrollTop <= 0 && y > startY && !String(window.getSelection())) {
+        dragging = true; startY = y;
+        sheet.style.transition = 'none';
+      } else { lastY = y; lastT = now; return; }
+    }
+    e.preventDefault();                                   // the sheet moves, not its content
+    const dy = Math.max(0, y - startY);
+    sheet.style.transform = `translateY(${dy}px)`;
+    speed = (y - lastY) / Math.max(1, now - lastT);       // px per ms, positive = down
+    lastY = y; lastT = now;
+  }, { passive: false });
+
+  function release() {
+    if (!tracking) return;
+    tracking = false;
+    if (!dragging) return;
+    dragging = false;
+    const dy = Math.max(0, lastY - startY);
+    sheet.style.transition = '';                          // back to the CSS slide
+    sheet.style.transform = '';
+    if (dy > sheet.offsetHeight / 3 || speed > 0.5) close();   // slides away from where it is
+    // otherwise it springs back up to its full height
+  }
+  sheet.addEventListener('touchend', release, { passive: true });
+  sheet.addEventListener('touchcancel', release, { passive: true });
+}
+const archiveSheet = document.getElementById('archive-view');
+makeSheet(archiveSheet, archiveSheet, archiveIsOpen, closeArchive);
+makeSheet(sidePanel, sideClip, () => panelOpen, closePanel);
+
+</script>
 </body>
 </html>
