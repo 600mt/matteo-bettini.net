@@ -216,9 +216,11 @@ window.PROJECTS = {
   },
 
   'ilsignore': {
-    title: 'Il signore che viene da lontano',
+    title: 'Il signore che viene da lontano: Moving through the immateriality of a continental infrastructure',
     meta: ['2023'],
     content: [
+      { text: 'Between Italy and The Netherlands exists an invisible path, drawn by an underground pipe buried in 1973 by the italian holding Eni to augment the import of natural gas in the national grid. This infrastructure, nine-hundred kilometers long, at the time was promoted and documented as a promise of clean and endless energy to fuel Italian industry and people’s life and to substitute another fossil fuel, oil (see research of <a href="https://matteo-bettini.com/#gas-route">The Gas Route</a>).' },
+      { text: 'This path, camouflaged by the landscape over fifty years after it was buried, today, even more than any other infrastructure, remains unnoticed. It’s subtle presence, marked just by ground poles and empty spaces, and it’s super-human scale makes it hard to grasp and to understand in its geographical existence. In April 2023 its traces were slowly followed by Matteo for thirteen days, in an attempt to measure its out-scale, follow the immateriality of it’s promises and re-enact the gas long journey. An accidental and absurd travel, almost like a pilgrimage on old trade paths, today seems to be the only way to step into the anonymous spaces of infrastructure, which developed through time in the corners of urbanized areas, far from our sight.' },
       'img/video-travel/2.jpg',
       'img/video-travel/8.jpg',
       'img/video-travel/9.jpg',
@@ -232,7 +234,7 @@ window.PROJECTS = {
     ],
     related: ['shadow-circuits', 'gas-route'],
     // generated from content:
-    body: '',
+    body: 'Between Italy and The Netherlands exists an invisible path, drawn by an underground pipe buried in 1973 by the italian holding Eni to augment the import of natural gas in the national grid. This infrastructure, nine-hundred kilometers long, at the time was promoted and documented as a promise of clean and endless energy to fuel Italian industry and people’s life and to substitute another fossil fuel, oil (see research of <a href="https://matteo-bettini.com/#gas-route">The Gas Route</a>).\n\nThis path, camouflaged by the landscape over fifty years after it was buried, today, even more than any other infrastructure, remains unnoticed. It’s subtle presence, marked just by ground poles and empty spaces, and it’s super-human scale makes it hard to grasp and to understand in its geographical existence. In April 2023 its traces were slowly followed by Matteo for thirteen days, in an attempt to measure its out-scale, follow the immateriality of it’s promises and re-enact the gas long journey. An accidental and absurd travel, almost like a pilgrimage on old trade paths, today seems to be the only way to step into the anonymous spaces of infrastructure, which developed through time in the corners of urbanized areas, far from our sight.',
     images: [
       'img/video-travel/2.jpg',
       'img/video-travel/8.jpg',
