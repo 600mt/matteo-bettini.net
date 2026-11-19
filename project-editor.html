@@ -582,6 +582,7 @@ function renderBlock(ctx, block) {
     ta.addEventListener('input', () => { block.text = ta.value; fit(); refreshCount(); showLinks(links, ta.value); });
     ta.addEventListener('keydown', e => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); addLink(ta); }
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'i') { e.preventDefault(); addItalic(ta); }
     });
     ta._fit = fit;
     showLinks(links, ta.value);
@@ -595,6 +596,13 @@ function renderBlock(ctx, block) {
     link.addEventListener('mousedown', e => e.preventDefault());
     link.addEventListener('click', () => addLink(ta));
     acts.appendChild(link);
+
+    const ital = document.createElement('button');
+    ital.className = 'x link'; ital.innerHTML = '<i>italic</i>';
+    ital.title = 'Make the selected words italic (Ctrl/⌘ I)';
+    ital.addEventListener('mousedown', e => e.preventDefault());
+    ital.addEventListener('click', () => addItalic(ta));
+    acts.appendChild(ital);
 
     const split = document.createElement('button');
     split.className = 'x split'; split.textContent = 'split';
@@ -800,6 +808,26 @@ function addLink(ta) {
   }
   if (!sel.trim()) {
     const at = s + lead.length + open.length;
+    ta.setSelectionRange(at, at + words.length);
+  }
+}
+
+// Wrap the selected words in <i>…</i> (spaces around the selection stay outside).
+function addItalic(ta) {
+  const s = ta.selectionStart, e = ta.selectionEnd;
+  const sel = ta.value.slice(s, e);
+  const lead  = sel.match(/^\s*/)[0];
+  const trail = sel.trim() ? sel.match(/\s*$/)[0] : '';
+  const words = sel.trim() || 'italic text';
+  const snippet = lead + '<i>' + words + '</i>' + trail;
+  ta.focus();
+  ta.setSelectionRange(s, e);
+  if (!document.execCommand || !document.execCommand('insertText', false, snippet)) {
+    ta.setRangeText(snippet, s, e, 'end');
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  if (!sel.trim()) {
+    const at = s + lead.length + 3;
     ta.setSelectionRange(at, at + words.length);
   }
 }

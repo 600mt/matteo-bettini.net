@@ -523,18 +523,6 @@
     /* the footer's sentence, centred at the top, above the Year / Type
        switch: phones only, where the footer itself is hidden (see MOBILE CAROUSEL) */
     .arch-intro { display:none; }
-    /* the Close button: phones only, over the archive's top right corner,
-       big enough to hit with a thumb; it stays put while the list scrolls */
-    #arch-close {
-      display:none;
-      position:fixed; z-index:301;
-      top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));   /* the archive's top (see body.m-static #archive-view) */
-      right:var(--panel-gap);
-      padding:12px 14px;
-      font:inherit; font-size:0.65rem; line-height:1.2;
-      color:var(--ink-on-white); border:0; cursor:pointer;
-      background:#ffffff; border-radius:7px;   /* the list scrolls under it, out of sight */
-    }
     body.m-static .arch-intro {
       display:block; text-align:center;
       padding:20px 20px 0; font-size:0.7em; line-height:1.2;   /* as the archive list on mobile */
@@ -602,12 +590,11 @@
       }
       /* phones with the one-picture carousel: the archive runs the whole
          height of the screen, still floating in from the edges, rounded.
-         Closed with the Close button, or a swipe down from its top (see makeSheet) */
+         Closed with a swipe down from its top, or a tap outside it (see makeSheet) */
       body.m-static #archive-view {
         top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));   /* just under the thumbnail strip, like the project panel */
         height:auto;
       }
-      body.m-static.archive-open #arch-close { display:block; }
       #archive-content { font-size:0.7em; line-height:1.2; padding-left:20px; padding-right:20px; }   /* much smaller than the project descriptions, so entries fit; 14px margins, like the rest of the site */
       /* the details get a bigger share and the gaps are tighter,
          so they break onto fewer lines on a narrow screen */
@@ -869,7 +856,6 @@
   <button type="button" data-speed="R" aria-pressed="false" aria-label="Reverse">r</button>
 </p>
 
-<button type="button" id="arch-close" aria-label="Close the archive">Close</button>
 <div id="archive-view">
   <!-- phones only: the footer's sentence, above the Year / Type switch -->
   <p class="arch-intro">Matteo Bettini<br>Information design and art practice</p>
@@ -972,7 +958,9 @@ function textHtml(text) {
     out += '<a href="' + escHtml(href).replace(/"/g, '&quot;') + '"'
          + (external ? ' target="_blank" rel="noopener"' : '') + '>' + label + '</a>';
   }
-  return out + escHtml(text.slice(last));
+  out += escHtml(text.slice(last));
+  // italics: <i>words</i> or <em>words</em> (the project editor's "italic" button)
+  return out.replace(/&lt;(i|em)\s*&gt;([\s\S]*?)&lt;\/\1\s*&gt;/gi, '<i>$2</i>');
 }
 
 function paraHtml(text) {
@@ -2120,7 +2108,6 @@ document.addEventListener('click', e => {
   closeArchive();
 }, true);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && document.body.classList.contains('archive-open')) closeArchive(); });
-document.getElementById('arch-close').addEventListener('click', closeArchive);
 // phones: the archive and project sheets follow the finger when pulled down
 // from the top of their content (it can be held half way). On release it either
 // springs back up or slides away and closes: it closes when pulled down
