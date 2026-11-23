@@ -156,6 +156,7 @@
       z-index:101; pointer-events:none;   /* only the word itself is clickable */
     }
     #archive-float a { color:inherit; text-decoration:none; pointer-events:auto; cursor:pointer; text-underline-offset:0.15em; }
+    #archive-float .mobile-label { display:none; }
     #archive-float a:hover, #archive-float a:focus-visible { text-decoration:underline; }   /* looks clickable on hover */
     /* desktop: one soft shade along the whole bottom edge, behind the
        caption and the Info button (not on mobile) */
@@ -378,7 +379,10 @@
         padding:0 0 calc(14px + env(safe-area-inset-bottom, 0px));
         background:none;   /* no shade on mobile */
         font-size:0.8rem; line-height:1.2;   /* mobile: a bit smaller than the footer */
+        text-align:center;
       }
+      #archive-float .desktop-label { display:none; }
+      #archive-float .mobile-label { display:block; }
       body.archive-open #archive-float { visibility:hidden; }
       
       #bio {
@@ -845,7 +849,7 @@
 <div id="bottom-shade" aria-hidden="true"></div>
 
 <!-- the Info button: bottom right on desktop, bottom centre on mobile -->
-<p id="archive-float"><a href="#archive" id="info-open">Archive and Info</a></p>
+<p id="archive-float"><a href="#archive" id="info-open"><span class="desktop-label">Archive and Info</span><span class="mobile-label">Matteo Bettini<br>Information design and art practice</span></a></p>
 
 <!-- carousel speed (desktop only): M still, 1 the default, 2 twice as quick,
      R speed 1 in reverse. The speeds themselves are set in SPEEDS in the script. -->
