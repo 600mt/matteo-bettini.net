@@ -383,7 +383,7 @@
       }
       #archive-float .desktop-label { display:none; }
       #archive-float .mobile-label { display:block; }
-      body.archive-open #archive-float { visibility:hidden; }
+      body.archive-open #archive-float { display:none; pointer-events:none; }
       
       #bio {
         width:100vw; font-size:.72em; line-height:1.3;
@@ -849,7 +849,7 @@
 <div id="bottom-shade" aria-hidden="true"></div>
 
 <!-- the Info button: bottom right on desktop, bottom centre on mobile -->
-<p id="archive-float"><a href="#archive" id="info-open"><span class="desktop-label">Archive and Info</span><span class="mobile-label">Matteo Bettini<br>Information design and art practice</span></a></p>
+<p id="archive-float"><a href="#archive" id="info-open"><span class="desktop-label">Archive and Info</span><span class="mobile-label" id="archive-mobile-label">Matteo Bettini<br>Information design and art practice</span></a></p>
 
 <!-- carousel speed (desktop only): M still, 1 the default, 2 twice as quick,
      R speed 1 in reverse. The speeds themselves are set in SPEEDS in the script. -->
@@ -880,6 +880,9 @@ const sideClip      = document.getElementById('side-clip');
 const sideTrack     = document.getElementById('side-track');
 const sideDesc      = document.getElementById('side-desc');
 const thumbBar      = document.getElementById('thumb-bar');
+const archiveMobileLabel = document.getElementById('archive-mobile-label');
+const archiveIntro = document.querySelector('.arch-intro');
+if (archiveMobileLabel && archiveIntro) archiveMobileLabel.innerHTML = archiveIntro.innerHTML;
 
 /* a phone (or a tablet held upright): a narrow touch screen. A computer
    always gets the desktop version, however narrow its window, just scaled
