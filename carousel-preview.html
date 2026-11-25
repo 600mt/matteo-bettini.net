@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Carousel Preview</title>
+<!-- A preview and editor of the carousel pictures in index.html (the
+     <div id="image-list"> block): which ones the desktop carousel shows and
+     which ones phones show, in order.
+     Edit: drag a picture to move it; hover it for ✎ edit (swap the picture,
+     project, caption, desktop/mobile), ◐ hide (comment out), ＋ add after,
+     × remove. "+ Add picture" at the end of each list.
+     Save: "Connect folder" (Chrome / Edge) and pick the site folder: Save then
+     writes index.html directly. Otherwise Save downloads a new index.html to
+     put in place of the old one. Only the image-list block is rewritten; the
+     rest of index.html stays as it is on disk. ⌘Z / Ctrl+Z undoes, ⌘S saves. -->
+<script src="projects-data.js"></script>
+<style>
+  :root {
+    --bg:#16171a; --panel:#1f2024; --panel-2:#26272c; --line:#34353b; --line-soft:#2b2c31;
+    --text:#e6e6e8; --muted:#9a9ba1; --faint:#6b6c72; --accent:#7ea7ff; --accent-dim:#3a4a6b;
+    --danger:#d16a6a; --ok:#6ec18a; --warn:#e0b25c;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+         font:14px/1.5 ui-monospace,"SF Mono",Menlo,Consolas,monospace; -webkit-font-smoothing:antialiased; }
+  header { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+           padding:12px 22px; background:rgba(22,23,26,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+  header h1 { font-size:15px; font-weight:600; margin:0; }
+  .src { font-size:11.5px; padding:3px 9px; border-radius:20px; border:1px solid var(--line); color:var(--muted); }
+  .src.ok { color:var(--ok); border-color:#35513f; }
+  .src.err { color:var(--danger); border-color:#5a3434; }
+  .src.dirty { color:var(--warn); border-color:#5e4b2a; }
+  .spacer { flex:1; }
+  .btn { font:inherit; font-size:13px; color:var(--text); background:var(--panel-2); border:1px solid var(--line);
+         padding:6px 12px; border-radius:7px; cursor:pointer; text-decoration:none; }
+  .btn:hover { background:#303138; }
+  .btn:disabled { opacity:.4; cursor:default; }
+  .btn.primary { background:var(--accent-dim); border-color:#4a5f8a; color:#dfe8ff; }
+  .btn.danger { color:var(--danger); }
+  .btn.small { font-size:12px; padding:4px 9px; }
+  label.chk { font-size:12.5px; color:var(--muted); display:flex; gap:6px; align-items:center; cursor:pointer; }
+  a { color:var(--accent); }
+
+  main { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:28px; padding:22px; }
+  @media (max-width:900px) { main { grid-template-columns:1fr; } }
+  section h2 { font-size:13px; font-weight:600; margin:0 0 4px; letter-spacing:.3px; text-transform:uppercase; }
+  section .sub { color:var(--faint); font-size:12px; margin:0 0 12px; }
+
+  .tag { font-size:10.5px; padding:1px 6px; border-radius:10px; border:1px solid var(--line); color:var(--faint); margin-left:6px; white-space:nowrap; }
+  .tag.bad { color:var(--danger); border-color:#5a3434; }
+  .line { color:var(--faint); font-size:11px; }
+  .file { color:var(--text); word-break:break-all; }
+  .proj { color:var(--accent); }
+  .cap { color:var(--muted); }
+
+  /* every picture (row in the strip, card in details / mobile) */
+  .item { position:relative; cursor:grab; }
+  .item.off { opacity:.38; }
+  .item.missing .media { outline:2px solid var(--danger); outline-offset:-2px; }
+  .item.dragging { opacity:.25; }
+  .item.drop-before { box-shadow:0 -3px 0 var(--accent); }
+  .item.drop-after  { box-shadow:0 3px 0 var(--accent); }
+  .phones .item.drop-before { box-shadow:-4px 0 0 var(--accent); }
+  .phones .item.drop-after  { box-shadow:4px 0 0 var(--accent); }
+  .media img, .media video { display:block; width:100%; height:auto; background:#000; pointer-events:none; }
+  .num { position:absolute; top:4px; left:4px; font-size:11px; padding:0 5px; border-radius:4px; background:rgba(0,0,0,.65); color:#fff; pointer-events:none; }
+  .tools { position:absolute; top:4px; right:4px; display:none; gap:3px; z-index:2; }
+  .item:hover .tools { display:flex; }
+  .tools button { font:inherit; font-size:12px; width:24px; height:24px; padding:0; border-radius:5px; cursor:pointer;
+                  background:rgba(20,21,24,.85); color:#fff; border:1px solid rgba(255,255,255,.18); }
+  .tools button:hover { background:var(--accent-dim); }
+  .tools button.del:hover { background:#6b2f2f; }
+
+  .desk-tools { display:flex; gap:14px; align-items:center; margin:0 0 12px; font-size:12px; color:var(--muted); flex-wrap:wrap; }
+  .desk-tools input[type=range] { width:140px; }
+
+  /* desktop, contiguous: the pictures stacked with no gaps, small */
+  .strip .item { display:flex; gap:12px; }
+  .strip .media { position:relative; width:var(--strip-w, 260px); flex:0 0 auto; }
+  .strip .info { flex:1; min-width:0; font-size:11.5px; padding:4px 0; border-top:1px solid var(--line-soft); color:var(--muted); }
+  .strip.no-info .info { display:none; }
+  .strip.no-info .item { display:block; width:var(--strip-w, 260px); }
+
+  /* desktop details / mobile: cards */
+  .card { background:var(--panel); border:1px solid var(--line-soft); border-radius:8px; overflow:hidden; margin-bottom:12px; }
+  .card .media { position:relative; }
+  .meta { padding:7px 10px; font-size:12px; display:flex; flex-direction:column; gap:1px; }
+
+  /* mobile: each picture fills a phone screen (background-size:cover) */
+  .phones { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; }
+  .phones .card { margin:0; }
+  .phone { aspect-ratio:9 / 19.5; background:#000 center / cover no-repeat; border-bottom:1px solid var(--line-soft); }
+  .thumbs { display:flex; overflow-x:auto; margin:0 0 14px; border:1px solid var(--line-soft); border-radius:6px; }
+  .thumbs img { height:44px; width:auto; display:block; }
+  .add { display:block; width:100%; margin-top:12px; padding:12px; border:1px dashed var(--line); border-radius:8px;
+         background:none; color:var(--muted); font:inherit; font-size:12.5px; cursor:pointer; }
+  .add:hover { color:var(--text); border-color:var(--accent); }
+  .phones .add { margin:0; min-height:120px; }
+
+  .msg { padding:40px 22px; color:var(--muted); }
+
+  /* edit dialog */
+  dialog { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:0;
+           width:min(920px, 94vw); max-height:90vh; }
+  dialog::backdrop { background:rgba(0,0,0,.6); }
+  .dlg { display:flex; flex-direction:column; max-height:90vh; }
+  .dlg-head { padding:14px 18px; border-bottom:1px solid var(--line); display:flex; gap:14px; align-items:flex-start; }
+  .dlg-head .preview { width:150px; height:100px; background:#000 center / contain no-repeat; border-radius:5px; flex:0 0 auto; }
+  .fields { flex:1; display:grid; grid-template-columns:auto 1fr; gap:7px 10px; align-items:center; font-size:12.5px; }
+  .fields label { color:var(--muted); }
+  .fields input, .fields select, .filter { font:inherit; font-size:12.5px; color:var(--text); background:#14151a;
+           border:1px solid var(--line); border-radius:6px; padding:5px 8px; width:100%; }
+  .fields .row2 { display:flex; gap:6px; }
+  .pick-bar { padding:10px 18px; display:flex; gap:10px; align-items:center; font-size:12px; color:var(--faint); }
+  .grid { overflow:auto; padding:0 18px 14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:8px; }
+  .grid button { position:relative; padding:0; border:2px solid transparent; border-radius:5px; background:#000; cursor:pointer; overflow:hidden; }
+  .grid button.sel { border-color:var(--accent); }
+  .grid img { display:block; width:100%; height:80px; object-fit:cover; }
+  .grid .nm { display:block; font-size:10px; color:var(--muted); background:var(--panel); padding:2px 4px; text-align:left;
+              white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .grid .used { position:absolute; top:3px; right:3px; font-size:9.5px; padding:0 4px; border-radius:3px; background:var(--accent-dim); color:#fff; }
+  .dlg-foot { padding:12px 18px; border-top:1px solid var(--line); display:flex; gap:8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Carousel Preview</h1>
+  <span class="src" id="srcBadge">loading…</span>
+  <span class="src dirty" id="dirtyBadge" hidden>unsaved changes</span>
+  <label class="chk"><input type="checkbox" id="showOff"> show commented-out</label>
+  <span class="spacer"></span>
+  <button class="btn small" id="undo" disabled title="⌘Z">Undo</button>
+  <button class="btn small" id="connect" hidden>Connect folder</button>
+  <button class="btn small" id="reload">Reload</button>
+  <button class="btn small" id="openFile">Open index.html…</button>
+  <button class="btn primary" id="save" disabled title="⌘S">Save</button>
+  <a class="btn small" href="project-editor.html">Project editor</a>
+  <input type="file" id="fileInput" accept=".html" hidden>
+</header>
+<div id="out" class="msg">Reading index.html…</div>
+
+<dialog id="dlg">
+  <form method="dialog" class="dlg" id="dlgForm">
+    <div class="dlg-head">
+      <div class="preview" id="dPreview"></div>
+      <div class="fields">
+        <label>picture</label>
+        <div class="row2"><input id="dSrc" placeholder="img/name.jpg" autocomplete="off">
+          <button type="button" class="btn small" id="dBrowse" title="Pick a file from the img folder">File…</button></div>
+        <label>shown on</label>
+        <select id="dDevice"><option value="desktop">desktop</option><option value="mobile">mobile</option><option value="both">both</option></select>
+        <label>project</label>
+        <select id="dProject"></select>
+        <label>caption</label>
+        <div class="row2"><input id="dCaption" autocomplete="off">
+          <button type="button" class="btn small" id="dCapFrom" title="The caption used for this project elsewhere in the carousel, or its title">from project</button></div>
+      </div>
+    </div>
+    <div class="pick-bar">
+      <input class="filter" id="dFilter" placeholder="filter pictures…" style="max-width:260px">
+      <span id="dPoolNote"></span>
+    </div>
+    <div class="grid" id="dGrid"></div>
+    <div class="dlg-foot">
+      <button type="button" class="btn danger" id="dRemove">Remove</button>
+      <span class="spacer"></span>
+      <button value="cancel" class="btn">Cancel</button>
+      <button value="ok" class="btn primary" id="dOk">Apply</button>
+    </div>
+  </form>
+  <input type="file" id="dFileInput" accept="image/*,video/*" hidden>
+</dialog>
+
+<script>
+const $ = id => document.getElementById(id);
+const out = $('out'), badge = $('srcBadge'), showOff = $('showOff');
+const PROJECTS = window.PROJECTS || {};
+const IMG_RE = /\.(jpe?g|png|gif|webp|avif|svg|mp4|webm|mov)$/i;
+const isVideoSrc = s => /\.(mp4|webm|mov)$/i.test(s);
+
+let items = [];          // the carousel, in index.html order: {id, off, device, src, poster, project, caption, html, line}
+let loadedText = '';     // index.html as last read
+let loadedRegion = '';   // its image-list block as last read
+let dir = null;          // the site folder, when connected
+let pool = [];           // pictures to pick from
+let undoStack = [];
+let dirty = false;
+let nextId = 1;
+
+// desktop view settings, remembered between visits
+let deskView  = localStorage.getItem('cp-deskView') || 'strip';
+let stripW    = +(localStorage.getItem('cp-stripW') || 260);
+let stripInfo = localStorage.getItem('cp-stripInfo') !== '0';
+
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]));
+const url = s => encodeURI(s || '');
+
+/* ── reading and writing the image-list block ───────────────────── */
+
+// where the inside of <div id="image-list"> … </div> starts and ends
+function findRegion(html) {
+  const a = html.indexOf('id="image-list"');
+  if (a < 0) throw new Error('no <div id="image-list"> in the file');
+  const start = html.indexOf('>', a) + 1;
+  const re = /<!--[\s\S]*?-->|<div\b|<\/div\s*>/gi;
+  re.lastIndex = start;
+  let depth = 1, m;
+  while ((m = re.exec(html))) {
+    if (m[0].startsWith('<!--')) continue;
+    if (m[0][1] === '/') { if (--depth === 0) return { start, end: m.index }; }
+    else depth++;
+  }
+  throw new Error('the image-list block is not closed');
+}
+
+function parse(html) {
+  const { start, end } = findRegion(html);
+  const region = html.slice(start, end);
+  const t = document.createElement('template');
+  t.innerHTML = region;
+  const found = [];
+  const collect = (root, off) => {
+    for (const node of root.childNodes) {
+      if (node.nodeType === Node.COMMENT_NODE) {
+        const c = document.createElement('template');
+        c.innerHTML = node.data;
+        collect(c.content, true);
+      } else if (node.nodeType === Node.ELEMENT_NODE) {
+        if (node.classList.contains('image-wrapper')) found.push({ el: node, off });
+        else collect(node, off);
+      }
+    }
+  };
+  collect(t.content, false);
+
+  let pos = 0;
+  const list = found.map(({ el, off }) => {
+    const media = el.querySelector('img, video');
+    const isVideo = media && media.tagName === 'VIDEO';
+    const src = media ? (media.getAttribute('src') || media.querySelector('source')?.getAttribute('src') || '') : '';
+    let line = null;
+    if (src) {
+      const at = region.indexOf(src, pos);
+      if (at >= 0) { line = html.slice(0, start + at).split('\n').length; pos = at + src.length; }
+    }
+    return {
+      id: nextId++, off, line, src,
+      poster: isVideo ? media.getAttribute('poster') || '' : '',
+      device: el.dataset.device || 'both',
+      project: el.dataset.project || '',
+      caption: (el.querySelector('.caption')?.textContent || '').trim(),
+      html: el.outerHTML,
+    };
+  });
+  return { list, region };
+}
+
+// one picture as HTML: its original markup with the changed fields put in
+function itemHTML(it) {
+  let el;
+  if (it.html) {
+    const t = document.createElement('template');
+    t.innerHTML = it.html.trim();
+    el = t.content.firstElementChild;
+  } else {
+    el = document.createElement('div');
+    el.className = 'image-wrapper';
+    el.innerHTML = '\n            <img loading="lazy">\n            <span class="caption"></span>\n          ';
+  }
+  if (it.device === 'both') el.removeAttribute('data-device'); else el.setAttribute('data-device', it.device);
+  if (it.project) el.setAttribute('data-project', it.project); else el.removeAttribute('data-project');
+
+  let m = el.querySelector('img, video');
+  const wantVideo = isVideoSrc(it.src);
+  if (!m || (m.tagName === 'VIDEO') !== wantVideo) {
+    const n = document.createElement(wantVideo ? 'video' : 'img');
+    if (wantVideo) { n.muted = true; ['muted','loop','autoplay','playsinline'].forEach(a => n.setAttribute(a, '')); }
+    else n.setAttribute('loading', 'lazy');
+    if (m) m.replaceWith(n); else el.prepend(n);
+    m = n;
+  }
+  const source = m.querySelector('source');
+  const target = source && !m.getAttribute('src') ? source : m;
+  if (target.getAttribute('src') !== it.src) target.setAttribute('src', it.src);
+
+  let c = el.querySelector('.caption');
+  if (it.caption) {
+    if (!c) { c = document.createElement('span'); c.className = 'caption'; m.after('\n            ', c); }
+    if (c.textContent.trim() !== it.caption) c.textContent = it.caption + ' ';
+  } else if (c && c.textContent.trim()) c.textContent = ' ';
+  return el.outerHTML;
+}
+
+function buildRegion() {
+  const lines = [];
+  let mobileMarked = false;
+  for (const it of items) {
+    if (!mobileMarked && it.device === 'mobile') { lines.push('\n<!--mobile-->\n'); mobileMarked = true; }
+    const h = itemHTML(it);
+    lines.push('          ' + (it.off ? `<!-- ${h} -->` : h));
+  }
+  return '\n\n' + lines.join('\n') + '\n\n        ';
+}
+
+function splice(html, region) {
+  const { start, end } = findRegion(html);
+  return html.slice(0, start) + region + html.slice(end);
+}
+
+/* ── loading ────────────────────────────────────────────────────── */
+
+function load(html, label) {
+  try {
+    const { list, region } = parse(html);
+    items = list; loadedText = html; loadedRegion = region;
+    undoStack = []; setDirty(false);
+    badge.textContent = label; badge.className = 'src ok';
+    buildPool();
+    render();
+  } catch (e) { fail(e.message); }
+}
+function fail(why) {
+  badge.textContent = 'not loaded'; badge.className = 'src err';
+  out.className = 'msg';
+  out.innerHTML = `Could not read index.html (${esc(why)}).<br><br>
+    Browsers often block reading files when the page is opened straight from disk.
+    Click <b>Connect folder</b> (Chrome / Edge) and pick the site folder, or <b>Open index.html…</b>,
+    or serve the folder (e.g. VS Code “Live Server”).`;
+}
+async function readIndex() {
+  if (dirty && !confirm('Discard the unsaved changes and read index.html again?')) return;
+  if (dir) {
+    try {
+      const f = await (await dir.getFileHandle('index.html')).getFile();
+      return load(await f.text(), dir.name + '/index.html · ' + new Date().toLocaleTimeString());
+    } catch (e) { return fail(e.message); }
+  }
+  fetch('index.html?' + Date.now()).then(r => r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)))
+    .then(t => load(t, 'index.html · ' + new Date().toLocaleTimeString()))
+    .catch(e => fail(e.message));
+}
+
+// the pictures to pick from: the img folder when connected, otherwise
+// every picture the carousel and the projects already use
+async function buildPool() {
+  const set = new Set(items.map(i => i.src).filter(Boolean));
+  for (const p of Object.values(PROJECTS))
+    for (const c of p.content || p.images || []) {
+      const s = typeof c === 'string' ? c : c && c.src;
+      if (s && IMG_RE.test(s)) set.add(s);
+    }
+  if (dir) {
+    for (const folder of ['img', 'img-2']) {
+      try {
+        const h = await dir.getDirectoryHandle(folder);
+        for await (const [name, e] of h.entries()) if (e.kind === 'file' && IMG_RE.test(name)) set.add(folder + '/' + name);
+      } catch (_) {}
+    }
+  }
+  pool = [...set].sort((a, b) => a.localeCompare(b));
+}
+
+/* ── the folder (File System Access, Chrome / Edge) ─────────────── */
+
+// (gives up after a second: some browsers never answer for pages opened from disk)
+const idb = (mode, fn) => new Promise((res, rej) => {
+  setTimeout(() => rej(new Error('storage timeout')), 1000);
+  const r = indexedDB.open('carousel-preview', 1);
+  r.onupgradeneeded = () => r.result.createObjectStore('kv');
+  r.onsuccess = () => { const tx = r.result.transaction('kv', mode); const q = fn(tx.objectStore('kv')); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); };
+  r.onerror = () => rej(r.error);
+});
+
+async function useDir(h, label) {
+  dir = h;
+  $('connect').textContent = 'Folder: ' + h.name;
+  $('connect').title = 'Connected: Save writes index.html in this folder. Click to pick another.';
+  updateSaveLabel();
+  await readIndex();
+}
+$('connect').onclick = async () => {
+  try {
+    const saved = !dir && await idb('readonly', s => s.get('dir')).catch(() => null);
+    if (saved && await saved.requestPermission({ mode: 'readwrite' }) === 'granted') return useDir(saved);
+    const h = await window.showDirectoryPicker({ id: 'site', mode: 'readwrite' });
+    try { await h.getFileHandle('index.html'); }
+    catch (_) { return alert('There is no index.html in “' + h.name + '”. Pick the site folder.'); }
+    await idb('readwrite', s => s.put(h, 'dir')).catch(() => {});
+    useDir(h);
+  } catch (e) { if (e.name !== 'AbortError') alert(e.message); }
+};
+
+/* ── editing ────────────────────────────────────────────────────── */
+
+const snapshot = () => JSON.stringify(items);
+function change(fn) {
+  undoStack.push(snapshot());
+  if (undoStack.length > 100) undoStack.shift();
+  fn();
+  setDirty(true);
+  render();
+}
+function undo() {
+  if (!undoStack.length) return;
+  items = JSON.parse(undoStack.pop());
+  setDirty(undoStack.length > 0 || buildRegion() !== loadedRegion);
+  render();
+}
+function setDirty(v) {
+  dirty = v;
+  $('dirtyBadge').hidden = !v;
+  $('save').disabled = !v;
+  $('undo').disabled = !undoStack.length;
+}
+function updateSaveLabel() {
+  $('save').textContent = dir ? 'Save' : 'Save (download)';
+}
+const byId = id => items.find(i => i.id === +id);
+
+function move(dragId, targetId, after) {
+  if (dragId === targetId) return;
+  change(() => {
+    const it = byId(dragId);
+    items.splice(items.indexOf(it), 1);
+    const at = items.indexOf(byId(targetId));
+    items.splice(after ? at + 1 : at, 0, it);
+  });
+}
+
+async function save() {
+  if (!dirty) return;
+  const region = buildRegion();
+  try {
+    if (dir) {
+      const fh = await dir.getFileHandle('index.html');
+      const disk = await (await fh.getFile()).text();
+      // someone (e.g. VS Code) changed the picture list since it was read
+      if (findRegionText(disk) !== loadedRegion &&
+          !confirm('The picture list in index.html changed on disk since it was read here. Overwrite it with this version?')) return;
+      const text = splice(disk, region);
+      const w = await fh.createWritable();
+      await w.write(text); await w.close();
+      load(text, dir.name + '/index.html · saved ' + new Date().toLocaleTimeString());
+    } else {
+      const text = splice(loadedText, region);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/html' }));
+      a.download = 'index.html';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      load(text, 'index.html · downloaded ' + new Date().toLocaleTimeString() + ' — replace the old file with it');
+    }
+  } catch (e) { alert('Could not save: ' + e.message); }
+}
+function findRegionText(html) { const { start, end } = findRegion(html); return html.slice(start, end); }
+
+/* ── the edit / add dialog ──────────────────────────────────────── */
+
+let dlgCtx = null;   // { id } to edit, or { afterId, device } to add
+function openDialog(ctx) {
+  dlgCtx = ctx;
+  const it = ctx.id ? byId(ctx.id) : { src: '', device: ctx.device, project: '', caption: '' };
+  $('dSrc').value = it.src;
+  $('dDevice').value = it.device;
+  $('dProject').innerHTML = '<option value="">(no project — not clickable)</option>' +
+    [...new Set([...Object.keys(PROJECTS), ...items.map(i => i.project).filter(Boolean)])]
+      .map(k => `<option value="${esc(k)}">${esc(k)}${PROJECTS[k] ? ' — ' + esc(PROJECTS[k].title || '') : ''}</option>`).join('');
+  $('dProject').value = it.project;
+  $('dCaption').value = it.caption;
+  $('dRemove').hidden = !ctx.id;
+  $('dOk').textContent = ctx.id ? 'Apply' : 'Add';
+  $('dFilter').value = '';
+  $('dPoolNote').textContent = dir ? `${pool.length} pictures in img/` :
+    `${pool.length} pictures used by the carousel and the projects — Connect folder to see all of img/, or use File…`;
+  renderGrid();
+  updatePreview();
+  $('dlg').showModal();
+}
+function updatePreview() {
+  const s = $('dSrc').value.trim();
+  $('dPreview').style.backgroundImage = s && !isVideoSrc(s) ? `url("${url(s)}")` : 'none';
+  $('dGrid').querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.src === s));
+}
+function renderGrid() {
+  const f = $('dFilter').value.trim().toLowerCase();
+  const used = new Set(items.filter(i => !i.off).map(i => i.src));
+  $('dGrid').innerHTML = pool.filter(s => !f || s.toLowerCase().includes(f)).map(s =>
+    `<button type="button" data-src="${esc(s)}" title="${esc(s)}">
+      ${isVideoSrc(s) ? '<img alt="">' : `<img src="${url(s)}" loading="lazy" alt="">`}
+      ${used.has(s) ? '<span class="used">in carousel</span>' : ''}
+      <span class="nm">${esc(s.replace(/^img\//, ''))}</span></button>`).join('');
+  updatePreview();
+}
+$('dGrid').onclick = e => { const b = e.target.closest('button'); if (b) { $('dSrc').value = b.dataset.src; updatePreview(); } };
+$('dGrid').ondblclick = e => { if (e.target.closest('button')) $('dOk').click(); };
+$('dFilter').oninput = renderGrid;
+$('dSrc').oninput = updatePreview;
+$('dBrowse').onclick = () => $('dFileInput').click();
+$('dFileInput').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  // the browser gives only the name: the file has to be in img/
+  $('dSrc').value = 'img/' + f.name; updatePreview(); e.target.value = '';
+};
+$('dCapFrom').onclick = () => {
+  const p = $('dProject').value; if (!p) return;
+  const other = items.find(i => i.project === p && i.caption && (!dlgCtx.id || i.id !== dlgCtx.id));
+  $('dCaption').value = other ? other.caption : (PROJECTS[p]?.title || '');
+};
+$('dProject').onchange = () => { if (!$('dCaption').value.trim()) $('dCapFrom').click(); };
+$('dRemove').onclick = () => { const id = dlgCtx.id; $('dlg').close(); remove(id); };
+$('dlg').addEventListener('close', () => {
+  if ($('dlg').returnValue !== 'ok') return;
+  const fields = {
+    src: $('dSrc').value.trim(), device: $('dDevice').value,
+    project: $('dProject').value, caption: $('dCaption').value.trim(),
+  };
+  if (!fields.src) return;
+  if (dlgCtx.id) change(() => Object.assign(byId(dlgCtx.id), fields));
+  else change(() => {
+    const it = { id: nextId++, off: false, line: null, poster: '', html: null, ...fields };
+    let at;
+    if (dlgCtx.afterId) at = items.indexOf(byId(dlgCtx.afterId)) + 1;
+    else {   // after the last picture of that list
+      const last = [...items].reverse().find(i => i.device === dlgCtx.device || i.device === 'both');
+      at = last ? items.indexOf(last) + 1 : (dlgCtx.device === 'desktop' ? 0 : items.length);
+    }
+    items.splice(at, 0, it);
+  });
+});
+$('dlgForm').onsubmit = () => { $('dlg').returnValue = 'ok'; };
+
+function remove(id) {
+  const it = byId(id);
+  if (it && confirm(`Remove ${it.src} from the carousel?\n(◐ hide comments it out instead.)`))
+    change(() => items.splice(items.indexOf(it), 1));
+}
+
+/* ── drawing ────────────────────────────────────────────────────── */
+
+const tools = it => `<div class="tools">
+  <button type="button" data-act="edit" title="Edit: swap the picture, project, caption">✎</button>
+  <button type="button" data-act="hide" title="${it.off ? 'Show again' : 'Hide (comment out)'}">${it.off ? '◑' : '◐'}</button>
+  <button type="button" data-act="add" title="Add a picture after this one">＋</button>
+  <button type="button" data-act="del" class="del" title="Remove">×</button></div>`;
+
+function info(it) {
+  return `<span><span class="file">${esc(it.src || '(no media)')}</span>${it.device === 'both' ? '<span class="tag">both</span>' : ''}${isVideoSrc(it.src) ? '<span class="tag">video</span>' : ''}${it.off ? '<span class="tag">commented out</span>' : ''}</span>
+    <span class="proj">${it.project ? '→ ' + esc(it.project) : '<span class="line">no project (not clickable)</span>'}</span>
+    <span class="cap">${esc(it.caption) || '<span class="line">no caption</span>'}${it.line && !dirty ? ` <span class="line">· index.html:${it.line}</span>` : ''}</span>`;
+}
+const mediaTag = it => isVideoSrc(it.src)
+  ? `<video src="${url(it.src)}" poster="${url(it.poster)}" muted loop autoplay playsinline></video>`
+  : `<img src="${url(it.src)}" alt="" draggable="false">`;
+
+function render() {
+  const off = showOff.checked;
+  const forDesk = items.filter(it => (it.device === 'both' || it.device === 'desktop') && (off || !it.off));
+  const forMob  = items.filter(it => (it.device === 'both' || it.device === 'mobile')  && (off || !it.off));
+  const nDesk = forDesk.filter(i => !i.off).length, nMob = forMob.filter(i => !i.off).length;
+  let d = 0, m = 0;
+  const attrs = (it, sec, cls = '') => `class="${cls}item${it.off ? ' off' : ''}" draggable="true" data-id="${it.id}" data-sec="${sec}" data-src="${esc(url(isVideoSrc(it.src) ? it.poster : it.src))}"`;
+
+  const desk = deskView === 'strip'
+    ? `<div class="strip${stripInfo ? '' : ' no-info'}" style="--strip-w:${stripW}px">${forDesk.map(it => {
+        const n = it.off ? '–' : ++d;
+        return `<div ${attrs(it, 'desk')} title="${esc(`${n}. ${it.src}${it.project ? ' → ' + it.project : ''}${it.caption ? '\n' + it.caption : ''}`)}">
+          <div class="media">${mediaTag(it)}<span class="num">${n}</span>${tools(it)}</div>
+          <div class="info meta">${info(it)}</div></div>`;
+      }).join('')}</div>`
+    : forDesk.map(it => `<div ${attrs(it, 'desk', 'card ')}>
+        <div class="media">${mediaTag(it)}<span class="num">${it.off ? '–' : ++d}</span>${tools(it)}</div>
+        <div class="meta">${info(it)}</div></div>`).join('');
+
+  out.className = '';
+  out.innerHTML = `<main>
+    <section>
+      <h2>Desktop — ${nDesk} pictures</h2>
+      <p class="sub">The vertical carousel, top to bottom (it loops). Drag to move; hover for ✎ ◐ ＋ ×.</p>
+      <div class="desk-tools">
+        <label class="chk"><input type="radio" name="dview" value="strip" ${deskView === 'strip' ? 'checked' : ''}> contiguous</label>
+        <label class="chk"><input type="radio" name="dview" value="cards" ${deskView === 'cards' ? 'checked' : ''}> details</label>
+        <span ${deskView === 'strip' ? '' : 'hidden'}>width <input type="range" id="stripW" min="80" max="600" value="${stripW}"></span>
+        <label class="chk" ${deskView === 'strip' ? '' : 'hidden'}><input type="checkbox" id="stripInfo" ${stripInfo ? 'checked' : ''}> info</label>
+      </div>
+      ${desk}
+      <button type="button" class="add" data-add="desktop">+ Add picture to desktop</button>
+    </section>
+    <section>
+      <h2>Mobile — ${nMob} pictures</h2>
+      <p class="sub">One picture at a time, filling the screen; the first one is random. Thumbnail strip as on the phone:</p>
+      <div class="thumbs">${forMob.filter(i => !i.off).map(it => `<img src="${url(isVideoSrc(it.src) ? it.poster : it.src)}" alt="">`).join('')}</div>
+      <div class="phones">${forMob.map(it => `<div ${attrs(it, 'mob', 'card ')}>
+        <div class="media phone" style="background-image:url('${url(isVideoSrc(it.src) ? it.poster : it.src)}')"><span class="num">${it.off ? '–' : ++m}</span>${tools(it)}</div>
+        <div class="meta">${info(it)}</div></div>`).join('')}
+        <button type="button" class="add" data-add="mobile">+ Add picture to mobile</button></div>
+    </section>
+  </main>`;
+
+  // desktop view controls
+  out.querySelectorAll('input[name=dview]').forEach(r => r.onchange = () => {
+    deskView = r.value; localStorage.setItem('cp-deskView', deskView); render();
+  });
+  const sw = $('stripW');
+  if (sw) sw.oninput = () => {
+    stripW = +sw.value; localStorage.setItem('cp-stripW', stripW);
+    out.querySelector('.strip').style.setProperty('--strip-w', stripW + 'px');
+  };
+  const si = $('stripInfo');
+  if (si) si.onchange = () => {
+    stripInfo = si.checked; localStorage.setItem('cp-stripInfo', stripInfo ? '1' : '0');
+    out.querySelector('.strip').classList.toggle('no-info', !stripInfo);
+  };
+
+  // mark pictures whose file is not there
+  out.querySelectorAll('.item').forEach(el => {
+    if (!el.dataset.src) return;
+    const probe = new Image();
+    probe.onerror = () => el.classList.add('missing');
+    probe.src = el.dataset.src;
+  });
+}
+
+/* ── clicks and dragging on the lists ───────────────────────────── */
+
+out.addEventListener('click', e => {
+  const add = e.target.closest('[data-add]');
+  if (add) return openDialog({ device: add.dataset.add });
+  const b = e.target.closest('.tools button');
+  if (!b) return;
+  const el = b.closest('.item'), it = byId(el.dataset.id);
+  const act = b.dataset.act;
+  if (act === 'edit') openDialog({ id: it.id });
+  if (act === 'hide') {
+    change(() => { it.off = !it.off; });
+    if (it.off && !showOff.checked) { showOff.checked = true; render(); }
+  }
+  if (act === 'add') openDialog({ afterId: it.id, device: el.dataset.sec === 'mob' ? 'mobile' : 'desktop' });
+  if (act === 'del') remove(it.id);
+});
+out.addEventListener('dblclick', e => {
+  const el = e.target.closest('.item');
+  if (el && !e.target.closest('.tools')) openDialog({ id: +el.dataset.id });
+});
+
+let drag = null;   // { id, sec }
+const clearDrop = () => out.querySelectorAll('.drop-before, .drop-after').forEach(x => x.classList.remove('drop-before', 'drop-after'));
+const dropSide = (el, e) => {
+  const r = el.getBoundingClientRect();
+  return el.dataset.sec === 'mob' ? e.clientX > r.left + r.width / 2 : e.clientY > r.top + r.height / 2;
+};
+out.addEventListener('dragstart', e => {
+  const el = e.target.closest && e.target.closest('.item');
+  if (!el) return;
+  drag = { id: +el.dataset.id, sec: el.dataset.sec };
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', el.dataset.id);
+  requestAnimationFrame(() => el.classList.add('dragging'));
+});
+out.addEventListener('dragend', () => {
+  out.querySelectorAll('.dragging').forEach(x => x.classList.remove('dragging'));
+  clearDrop(); drag = null;
+});
+out.addEventListener('dragover', e => {
+  const el = e.target.closest('.item');
+  if (!drag || !el || el.dataset.sec !== drag.sec) return;
+  e.preventDefault();
+  clearDrop();
+  if (+el.dataset.id !== drag.id) el.classList.add(dropSide(el, e) ? 'drop-after' : 'drop-before');
+});
+out.addEventListener('drop', e => {
+  const el = e.target.closest('.item');
+  if (!drag || !el || el.dataset.sec !== drag.sec) return;
+  e.preventDefault();
+  const after = dropSide(el, e);
+  const { id } = drag;
+  clearDrop();
+  move(id, +el.dataset.id, after);
+});
+
+/* ── header ─────────────────────────────────────────────────────── */
+
+$('reload').onclick = readIndex;
+$('openFile').onclick = () => $('fileInput').click();
+$('fileInput').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (dirty && !confirm('Discard the unsaved changes?')) return;
+  f.text().then(t => load(t, f.name + ' (picked)'));
+  e.target.value = '';
+};
+$('save').onclick = save;
+$('undo').onclick = undo;
+showOff.onchange = () => items.length && render();
+document.addEventListener('keydown', e => {
+  if ($('dlg').open) return;
+  const mod = e.metaKey || e.ctrlKey;
+  if (mod && e.key.toLowerCase() === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  if (mod && e.key.toLowerCase() === 's') { e.preventDefault(); save(); }
+});
+window.addEventListener('beforeunload', e => { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+
+/* ── start ──────────────────────────────────────────────────────── */
+
+updateSaveLabel();
+(async () => {
+  if ('showDirectoryPicker' in window) {
+    $('connect').hidden = false;
+    // the folder picked last time: used right away if the browser still allows it
+    const saved = await idb('readonly', s => s.get('dir')).catch(() => null);
+    if (saved) {
+      if (await saved.queryPermission({ mode: 'readwrite' }).catch(() => '') === 'granted') return useDir(saved);
+      $('connect').textContent = 'Reconnect ' + saved.name;
+    }
+  }
+  readIndex();
+})();
+</script>
+</body>
+</html>

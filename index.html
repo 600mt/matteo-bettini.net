@@ -524,14 +524,6 @@
       font-size:0.76em; line-height:1.25;   /* desktop: the size of the project descriptions (.side-body); mobile has its own (see below) */
       color:inherit;
     }
-    /* the footer's sentence, centred at the top, above the Year / Type
-       switch: phones only, where the footer itself is hidden (see MOBILE CAROUSEL) */
-    .arch-intro { display:none; }
-    body.m-static .arch-intro {
-      display:block; text-align:center;
-      padding:20px 20px 0; font-size:0.7em; line-height:1.2;   /* as the archive list on mobile */
-      font-family:Arial, sans-serif; color:var(--ink-on-white-faint);   /* as the closing lines at the bottom (.arch-members) */
-    }
     .arch-group > span { display:block; margin-bottom:1.15em; }   /* the heading, then a blank line */
     .by-type .arch-group > span { letter-spacing:0.2em; color:var(--ink-on-white-faint); }   /* the type names, spaced out, in the light grey of the closing lines */
     /* year view: the year sits once in its own column on the left, level
@@ -680,7 +672,7 @@
             <img src="img/viewingconditions_3.jpg" loading="lazy">
             <span class="caption">"Viewing Conditions". Het Nieuwe Instituut, Rotterdam (2026) </span>
           </div>
-                    <div class="image-wrapper" data-device="desktop" data-project="a-place">
+          <div class="image-wrapper" data-device="desktop" data-project="a-place">
             <img src="img/aplace_2.jpg" loading="lazy">
             <span class="caption">"A Place Without a Name". Metamorphic Zone (2023–now) </span>
           </div>
@@ -689,14 +681,14 @@
             <span class="caption">"22.86x11.43x11.43". Palazzo Bronzo, Genoa (2025) </span>
           </div>
           <div class="image-wrapper" data-device="desktop" data-project="gas-route">
-            <img src="img/uno.jpg" loading="lazy">
+            <img src="img/TheGasRoute_8.jpg" loading="lazy">
             <span class="caption">"The Gas Route" (2023) </span>
           </div>
-                    <div class="image-wrapper" data-device="desktop" data-project="where-to">
+          <div class="image-wrapper" data-device="desktop" data-project="where-to">
             <img src="img/dem2_1.jpg" loading="lazy">
             <span class="caption">"Fragments of Democracy II". Circolo del Design, Turin (2025) </span>
           </div>
-                      <div class="image-wrapper" data-device="desktop" data-project="gas-route">
+          <div class="image-wrapper" data-device="desktop" data-project="gas-route">
             <img src="img/gasroute.png" loading="lazy">
             <span class="caption">"The Gas Route" (2023) </span>
           </div>
@@ -727,51 +719,46 @@
 
 <!--mobile-->
 
-
-
-
-<div class="image-wrapper" data-device="mobile" data-project="shadow-circuits">
-            <img src="img/mam_1-2.jpg" loading="lazy">
-            <span class="caption">"I was sure I would find it here". MaMA Rotterdam (2026) </span>
-          </div>
-                    <div class="image-wrapper" data-device="mobile" data-project="gas-route">
-            <img src="img/gasroute-1.png" loading="lazy">
-            <span class="caption">"The Gas Route" (2023)</span>
-          </div>
           <div class="image-wrapper" data-device="mobile" data-project="viewing-conditions">
             <img src="img/viewingconditions_12.jpg" loading="lazy">
             <span class="caption">"Viewing Conditions". Het Nieuwe Instituut, Rotterdam (2026) </span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="shadow-circuits">
+            <img src="img/mam_1-2.jpg" loading="lazy">
+            <span class="caption">"I was sure I would find it here". MaMA Rotterdam (2026) </span>
           </div>
           <div class="image-wrapper" data-device="mobile" data-project="dae-catalogue">
             <img src="img/dae_2.jpg" loading="lazy">
             <span class="caption">Design Academy Eindhoven Catalogue (2026) </span>
           </div>
-                    <div class="image-wrapper" data-device="mobile" data-project="ppv">
+          <div class="image-wrapper" data-device="mobile" data-project="where-to">
+            <img loading="lazy" src="img/dem2_2.jpg">
+            <span class="caption">"Fragments of Democracy II". Circolo del Design, Turin (2025) </span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="gas-route">
+            <img src="img/gasroute-1.png" loading="lazy">
+            <span class="caption">"The Gas Route" (2023)</span>
+          </div>
+          <div class="image-wrapper" data-device="mobile" data-project="ppv">
             <img src="img/ppv_4.jpg" loading="lazy">
             <span class="caption">"Perfect-Perfect-View". Oud House, Rotterdam (2025)  </span>
                     </div>
-
-                    <div class="image-wrapper" data-device="mobile" data-project="algo">
-            <img src="img/AlgorithmicMemories_4 copy.png" loading="lazy">
-            <span class="caption">"Algorithmic Memories". (2021) </span>
-          </div>
-
           <div class="image-wrapper" data-device="mobile" data-project="22x11x11">
             <img src="img/22x11x11_6.jpg" loading="lazy">
             <span class="caption">"22.86x11.43x11.43". Palazzo Bronzo, Genoa (2025) </span>
           </div>
-                    
-
-
+          <div class="image-wrapper" data-device="mobile" data-project="algo" data-m-zoom="1.1">
+            <img src="img/AlgorithmicMemories_4 copy.png" loading="lazy">
+            <span class="caption">"Algorithmic Memories". (2021) </span>
+          </div>
           <div class="image-wrapper" data-device="mobile" data-project="gas-route">
-            <img src="img/uno_2.jpg" loading="lazy">
+            <img src="img/TheGasRoute_8_ver.jpg" loading="lazy">
             <span class="caption"> </span>
           </div>
           <div class="image-wrapper" data-device="mobile" data-project="agreat">
             <img src="img/Agreat_4.jpg" loading="lazy">
             <span class="caption">A great place for a ride (2023) </span>
           </div>
-
           <div class="image-wrapper" data-device="mobile" data-project="fragments-democracy">
             <img src="img/FragmentsofDemocracy_1.jpg" loading="lazy">
             <span class="caption">Fragments of Democracy I (2024) </span>
@@ -780,34 +767,34 @@
             <img src="img/frontiere_7.jpg" loading="lazy">
             <span class="caption">The Gas Route (2023) </span>
           </div> -->
-
-
-
-        
           <!-- <div class="image-wrapper" data-device="mobile" data-project="shadow-circuits">
             <img src="img/mam_5.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="viewing-conditions">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="viewing-conditions">
             <img src="img/viewingconditions_2.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="22x11x11">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="22x11x11">
             <img src="img/22x11x11_6.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="ilsignore">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="ilsignore">
             <img src="img/ilsignore_8.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="fragments-democracy">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="fragments-democracy">
             <img src="img/FragmentsofDemocracy_1.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="agreat">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="agreat">
             <img src="img/Agreat_4.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile" data-project="where-to">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile" data-project="where-to">
             <img src="img/dem2_2.jpg" loading="lazy">
-          </div>
-          <div class="image-wrapper" data-device="mobile">
+          </div> -->
+          <!-- <div class="image-wrapper" data-device="mobile">
             <img src="img/IMG_8522.jpg" loading="lazy">
           </div> -->
+          <div class="image-wrapper" data-device="mobile" data-project="ilsignore">
+            <img loading="lazy" src="img/ilsignore_8.jpg">
+            <span class="caption">"The Gas Route" (2023) </span>
+          </div>
 
         </div>
       </div>
@@ -861,8 +848,6 @@
 </p>
 
 <div id="archive-view">
-  <!-- phones only: the footer's sentence, above the Year / Type switch -->
-  <p class="arch-intro">Matteo Bettini<br>Information design and art practice</p>
   <p id="arch-switch"><button type="button" data-mode="year" aria-pressed="false">Year</button> / <button type="button" data-mode="type" aria-pressed="true">Type</button></p>
   <div id="archive-content" class="by-type"></div>
 </div>
@@ -881,8 +866,6 @@ const sideTrack     = document.getElementById('side-track');
 const sideDesc      = document.getElementById('side-desc');
 const thumbBar      = document.getElementById('thumb-bar');
 const archiveMobileLabel = document.getElementById('archive-mobile-label');
-const archiveIntro = document.querySelector('.arch-intro');
-if (archiveMobileLabel && archiveIntro) archiveMobileLabel.innerHTML = archiveIntro.innerHTML;
 
 /* a phone (or a tablet held upright): a narrow touch screen. A computer
    always gets the desktop version, however narrow its window, just scaled
@@ -1676,7 +1659,8 @@ function mStart() {
   mItems = ownWrappers.map(w => {
     const media = w.querySelector('img') || w.querySelector('video');
     const src = media ? (media.tagName === 'VIDEO' ? media.poster : media.getAttribute('src')) : '';
-    return { src, project: w.dataset.project || '' };
+    // data-m-zoom="1.1" on a mobile picture zooms it in 10%, e.g. to hide a border in the file
+    return { src, project: w.dataset.project || '', zoom: parseFloat(w.dataset.mZoom) || 1 };
   }).filter(it => it.src);
   if (!mItems.length) { reveal(); return; }
 
@@ -1711,6 +1695,7 @@ function mShow(index) {
   mShownAt = Date.now();
   const it = mItems[mCurrent];
   mBg.style.backgroundImage = `url('${it.src}')`;
+  mBg.style.transform = it.zoom !== 1 ? `scale(${it.zoom})` : '';
   if (it.project) prefetchProject(it.project);
   mFloatInk(it.src);
   mThumbEls.forEach((el, i) => el.classList.toggle('active', i === mCurrent));
@@ -2164,6 +2149,82 @@ const archiveSheet = document.getElementById('archive-view');
 makeSheet(archiveSheet, archiveSheet, archiveIsOpen, closeArchive);
 makeSheet(sidePanel, sideClip, () => panelOpen, closePanel);
 
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
 </script>
 </body>
 </html>
