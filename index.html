@@ -376,18 +376,19 @@
       #footer .foot-more { display:none; }
       #footer .foot-dash-desk { display:none; }
       #footer .foot-mail-mob { display:inline; }   /* mobile: the email as the third line */
-      /* mobile: no caption; the Info button at the bottom centre, no shade,
+      /* mobile: no caption; the Info button in the bottom left corner, tilted, no shade,
          the footer's size. Hidden while the archive is
          open (a tap on the carousel strip closes it) and behind a project
          panel. */
       .carousel-cap { display:none; }
       #bottom-shade { display:none; }
       #archive-float {
-        right:auto; left:50%; transform:translateX(-50%);   /* mobile: bottom centre */
-        padding:0 0 calc(14px + env(safe-area-inset-bottom, 0px));
+        right:auto; left:calc(14px + env(safe-area-inset-left, 0px));   /* mobile: the bottom left corner, on the side */
+        transform:rotate(5deg); transform-origin:left bottom;   /* tilted right, like the name on desktop (.foot-name) */
+        padding:0 0 calc(24px + env(safe-area-inset-bottom, 0px));   /* a bit more room at the bottom */
         background:none;   /* no shade on mobile */
         font-size:0.8rem; line-height:1.2;   /* mobile: a bit smaller than the footer */
-        text-align:center;
+        text-align:center;   /* the three lines centred on each other */
       }
       #archive-float .desktop-label { display:none; }
       #archive-float .mobile-label { display:block; }
