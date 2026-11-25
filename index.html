@@ -337,6 +337,14 @@
     }
     .carousel-cap.show { opacity:1; }
 
+    /* full picture view: a trackpad pinch out (zoom in) hides every text over
+       the carousel; a pinch in brings it back (see FULL PICTURE VIEW in the script) */
+    #footer, #archive-float, #speed-switch { transition:opacity .45s ease; }
+    body.clean #footer, body.clean #archive-float, body.clean #speed-switch,
+    body.clean .thumb-bar, body.clean .carousel-cap {
+      opacity:0 !important; pointer-events:none !important;
+    }
+
     
 
     @media (max-width:768px) and (hover:none) and (pointer:coarse) {
@@ -474,11 +482,11 @@
     #m-thumbs button:focus-visible { outline:1px solid currentColor; outline-offset:1px; }
     :root { --m-thumb:44px; }   /* the height of the thumbnails along the top */
     #m-thumbs img { display:block; height:var(--m-thumb); width:auto; pointer-events:none; }
-    /* the project panel runs from just under the thumbnail strip to the
-       bottom, so the thumbnails stay visible above it */
+    /* the project panel covers the whole screen, the thumbnail strip too,
+       with the same gap (--panel-gap) from all four edges */
     @media (max-width:768px) and (hover:none) and (pointer:coarse) {
       body.m-static .side-panel {
-        top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));
+        top:calc(var(--panel-gap) + env(safe-area-inset-top, 0px));
         height:auto;
       }
     }
@@ -588,7 +596,7 @@
          height of the screen, still floating in from the edges, rounded.
          Closed with a swipe down from its top, or a tap outside it (see makeSheet) */
       body.m-static #archive-view {
-        top:calc(var(--m-thumb) + env(safe-area-inset-top, 0px) + var(--panel-gap));   /* just under the thumbnail strip, like the project panel */
+        top:calc(var(--panel-gap) + env(safe-area-inset-top, 0px));   /* over the thumbnail strip too: the same gap on all four sides, like the project panel */
         height:auto;
       }
       #archive-content { font-size:0.7em; line-height:1.2; padding-left:20px; padding-right:20px; }   /* much smaller than the project descriptions, so entries fit; 14px margins, like the rest of the site */
@@ -2078,6 +2086,43 @@ function closeArchive() {
   check();
   window.addEventListener('resize', check);
 })();
+
+/* ── FULL PICTURE VIEW ──────────────────────────────────────────
+   A pinch on the trackpad: pinching out (zooming in on the picture) hides
+   every text over the carousel (footer, caption, Archive and Info, speed
+   switch, thumbnails); pinching in brings them back. The browser's own page
+   zoom is turned off for the pinch. Chrome / Firefox / Edge send a pinch as
+   a wheel event with ctrlKey; Safari sends gesture events. Not while a
+   project or the archive is open. */
+const PINCH_STEP = 30;   // how far to pinch before it switches (wheel units); lower = more sensitive
+let pinchSum = 0, pinchTimer = 0;
+function setClean(on) {
+  if (on && (panelOpen || archiveIsOpen())) return;
+  document.body.classList.toggle('clean', on);
+}
+window.addEventListener('wheel', e => {
+  if (!e.ctrlKey) return;            // a plain scroll still moves the carousel
+  e.preventDefault();                // no page zoom
+  e.stopPropagation();               // and no carousel scroll
+  pinchSum += e.deltaY;
+  clearTimeout(pinchTimer);
+  pinchTimer = setTimeout(() => { pinchSum = 0; }, 250);
+  if (pinchSum <= -PINCH_STEP) { setClean(true);  pinchSum = 0; }
+  if (pinchSum >=  PINCH_STEP) { setClean(false); pinchSum = 0; }
+}, { passive: false, capture: true });
+// Safari
+let gestureScale = 1;
+document.addEventListener('gesturestart',  e => { e.preventDefault(); gestureScale = 1; });
+document.addEventListener('gesturechange', e => { e.preventDefault(); gestureScale = e.scale; });
+document.addEventListener('gestureend',    e => {
+  e.preventDefault();
+  if (gestureScale > 1.08) setClean(true);
+  else if (gestureScale < 0.92) setClean(false);
+});
+// opening a project or the archive brings the text back
+new MutationObserver(() => {
+  if (document.body.classList.contains('clean') && (panelOpen || archiveIsOpen())) document.body.classList.remove('clean');
+}).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
 // the footer catches clicks (so the picture behind it doesn't open),
 // but scrolling over it still moves the carousel
