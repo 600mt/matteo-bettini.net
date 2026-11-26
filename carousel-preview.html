@@ -354,7 +354,12 @@ async function buildPool() {
     for (const folder of ['img', 'img-2']) {
       try {
         const h = await dir.getDirectoryHandle(folder);
-        for await (const [name, e] of h.entries()) if (e.kind === 'file' && IMG_RE.test(name)) set.add(folder + '/' + name);
+        // the pictures in the folder and in its project folders (img/<project>/…)
+        for await (const [name, e] of h.entries()) {
+          if (e.kind === 'file' && IMG_RE.test(name)) set.add(folder + '/' + name);
+          else if (e.kind === 'directory')
+            for await (const [n2, e2] of e.entries()) if (e2.kind === 'file' && IMG_RE.test(n2)) set.add(`${folder}/${name}/${n2}`);
+        }
       } catch (_) {}
     }
   }
