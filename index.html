@@ -687,29 +687,29 @@
             <img src="img/viewing-conditions/viewingconditions_3.jpg" loading="lazy">
             <span class="caption">"Viewing Conditions". Het Nieuwe Instituut, Rotterdam (2026) </span>
           </div>
-          <div class="image-wrapper" data-device="desktop" data-project="a-place">
-            <img src="img/a-place/aplace_2.jpg" loading="lazy">
-            <span class="caption">"A Place Without a Name". Metamorphic Zone (2023–now) </span>
+          <div class="image-wrapper" data-device="desktop" data-project="gas-route">
+            <img src="img/gas-route/TheGasRoute_8.jpg" loading="lazy">
+            <span class="caption">"The Gas Route" (2023) </span>
           </div>
           <div class="image-wrapper" data-device="desktop" data-project="22x11x11">
             <img src="img/22x11x11/22x11x11_5_rotate.jpg" loading="lazy">
             <span class="caption">"22.86x11.43x11.43". Palazzo Bronzo, Genoa (2025) </span>
           </div>
           <div class="image-wrapper" data-device="desktop" data-project="gas-route">
-            <img src="img/gas-route/TheGasRoute_8.jpg" loading="lazy">
+            <img src="img/gas-route/gasroute.png" loading="lazy">
             <span class="caption">"The Gas Route" (2023) </span>
           </div>
           <div class="image-wrapper" data-device="desktop" data-project="where-to">
             <img src="img/where-to/dem2_1.jpg" loading="lazy">
             <span class="caption">"Fragments of Democracy II". Circolo del Design, Turin (2025) </span>
           </div>
-          <div class="image-wrapper" data-device="desktop" data-project="gas-route">
-            <img src="img/gas-route/gasroute.png" loading="lazy">
-            <span class="caption">"The Gas Route" (2023) </span>
-          </div>
           <div class="image-wrapper" data-device="desktop" data-project="ppv">
             <img src="img/ppv/ppv_5.jpg" loading="lazy">
             <span class="caption">"Perfect-Perfect-View". Oud House, Rotterdam (2025)  </span>
+          </div>
+          <div class="image-wrapper" data-device="desktop" data-project="a-place">
+            <img src="img/a-place/aplace_2.jpg" loading="lazy">
+            <span class="caption">"A Place Without a Name". Metamorphic Zone (2023–now) </span>
           </div>
           <div class="image-wrapper" data-device="desktop" data-project="agreat">
             <img src="img/agreat/Agreat_2.jpg" loading="lazy">
@@ -2231,6 +2231,44 @@ const archiveSheet = document.getElementById('archive-view');
 makeSheet(archiveSheet, archiveSheet, archiveIsOpen, closeArchive);
 makeSheet(sidePanel, sideClip, () => panelOpen, closePanel);
 
+</script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
 </script>
 <!-- Code injected by live-server -->
 <script>
