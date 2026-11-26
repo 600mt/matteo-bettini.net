@@ -880,6 +880,15 @@
 <script>
 const PROJECTS = window.PROJECTS;
 
+/* hidden projects (hidden: true in projects-data.js — the eye toggle in
+   project-editor.html or carousel-preview.html): the site leaves them out,
+   with their carousel pictures, panel and related-work buttons. */
+for (const [k, p] of Object.entries(PROJECTS)) if (p && p.hidden) {
+  delete PROJECTS[k];
+  document.querySelectorAll('#image-list .image-wrapper[data-project="' + CSS.escape(k) + '"]')
+    .forEach(w => w.remove());
+}
+
 const carouselClip  = document.getElementById('carousel-clip');
 const carouselTrack = document.getElementById('carousel-track');
 const imageList     = document.getElementById('image-list');

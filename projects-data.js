@@ -7,6 +7,8 @@
 //             { src: 'img/x.jpg', caption: 'small caption' } – an image with a caption
 //             Text at the very top sits next to the meta; the rest stacks below.
 //             Links inside text: <a href="https://…">words</a> (the link button in project-editor.html).
+// `hidden`  – true leaves the project out of the site (carousel pictures, panel,
+//             related-work buttons) without deleting it.
 // `body` and `images` are generated from `content` for pages that still read them.
 //   Edit `content` (or use project-editor.html) — not these two.
 window.PROJECTS = {
@@ -297,6 +299,7 @@ window.PROJECTS = {
   },
 
   'ima': {
+    hidden: true,   // left out of the site, with its carousel pictures
     title: 'Trésors sauvés de Gaza: 5000 ans d’histoire',
     meta: ['Institut du Monde Arabe, Paris', 'Poster designed for Studio Folder', '2025'],
     content: [

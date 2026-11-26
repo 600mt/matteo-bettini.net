@@ -92,6 +92,16 @@
     font-family: ui-sans-serif, system-ui, sans-serif;
   }
   .p-head .imgcount { color: var(--faint); font-size: 12px; }
+  .p-head .vis {
+    background: none; border: 1px solid var(--line); border-radius: 6px;
+    color: var(--muted); font-size: 11.5px; padding: 3px 8px; cursor: pointer;
+    font-family: ui-sans-serif, system-ui, sans-serif;
+  }
+  .p-head .vis:hover { color: var(--text); border-color: #45464d; }
+  .project.is-hidden .p-head .key,
+  .project.is-hidden .p-head .ttl,
+  .project.is-hidden .p-head .imgcount { opacity: .4; text-decoration: line-through; }
+  .project.is-hidden .p-head .vis { color: var(--danger); border-color: #4a3232; }
 
   .p-body { display: none; padding: 4px 16px 18px; border-top: 1px solid var(--line-soft); }
   .project.open .p-body { display: block; }
@@ -383,6 +393,7 @@ function toModel(projects) {
     meta: Array.isArray(p.meta) ? p.meta.slice() : [],
     blocks: toBlocks(p),
     related: Array.isArray(p.related) ? p.related.slice() : [],
+    hidden: !!p.hidden,
   }));
 }
 
@@ -414,7 +425,8 @@ function toast(msg, kind) {
 function updateCount() {
   const n = model.length;
   const imgs = model.reduce((s, p) => s + imgCount(p), 0);
-  document.getElementById('count').textContent = n + ' project' + (n===1?'':'s') + ' · ' + imgs + ' images';
+  const hid = model.filter(p => p.hidden).length;
+  document.getElementById('count').textContent = n + ' project' + (n===1?'':'s') + (hid ? ' (' + hid + ' hidden)' : '') + ' · ' + imgs + ' images';
 }
 
 function render() {
@@ -430,7 +442,7 @@ function render() {
 
 function renderProject(p, idx) {
   const wrap = document.createElement('div');
-  wrap.className = 'project' + (openState[p.key] ? ' open' : '');
+  wrap.className = 'project' + (openState[p.key] ? ' open' : '') + (p.hidden ? ' is-hidden' : '');
 
   // header
   const head = document.createElement('div');
@@ -439,7 +451,22 @@ function renderProject(p, idx) {
     '<span class="caret">▶</span>' +
     '<span class="key">' + esc(p.key) + '</span>' +
     '<span class="ttl">' + esc(p.title || '(untitled)') + '</span>' +
-    '<span class="imgcount">' + countLabel(p) + '</span>';
+    '<span class="imgcount">' + countLabel(p) + '</span>' +
+    '<button type="button" class="vis"></button>';
+  // show / hide on the site (hidden: true leaves out its carousel pictures and panel)
+  const vis = head.querySelector('.vis');
+  const paintVis = () => {
+    wrap.classList.toggle('is-hidden', !!p.hidden);
+    vis.textContent = p.hidden ? 'hidden' : 'shown';
+    vis.title = p.hidden ? 'Hidden from the site, with its carousel pictures — click to show'
+                         : 'Shown on the site — click to hide it and its carousel pictures';
+  };
+  paintVis();
+  vis.addEventListener('click', e => {
+    e.stopPropagation();
+    p.hidden = !p.hidden; paintVis(); updateCount();
+    toast(p.hidden ? 'Hidden — download the .js to apply' : 'Shown — download the .js to apply');
+  });
   head.addEventListener('click', () => {
     openState[p.key] = !openState[p.key];
     wrap.classList.toggle('open');
@@ -875,6 +902,8 @@ function serialize() {
 //             { src: 'img/x.jpg', caption: 'small caption' } – an image with a caption
 //             Text at the very top sits next to the meta; the rest stacks below.
 //             Links inside text: <a href="https://…">words</a> (the link button in project-editor.html).
+// \`hidden\`  – true leaves the project out of the site (carousel pictures, panel,
+//             related-work buttons) without deleting it.
 // \`body\` and \`images\` are generated from \`content\` for pages that still read them.
 //   Edit \`content\` (or use project-editor.html) — not these two.
 window.PROJECTS = {
@@ -907,7 +936,7 @@ window.PROJECTS = {
       : '';
 
     return (
-`  ${jsStr(p.key)}: {
+`  ${jsStr(p.key)}: {${p.hidden ? '\n    hidden: true,   // left out of the site, with its carousel pictures' : ''}
     title: ${jsStr(p.title)},
     meta: ${metaArr},
     content: ${contentBlock},${relatedLine}
@@ -985,7 +1014,7 @@ document.getElementById('fileInput').addEventListener('change', (e) => {
 document.getElementById('addProject').addEventListener('click', () => {
   let base = 'new-project', k = base, n = 1;
   while (model.some(m => m.key === k)) k = base + '-' + (++n);
-  const p = { key:k, title:'', meta:[], blocks:[], related:[] };
+  const p = { key:k, title:'', meta:[], blocks:[], related:[], hidden:false };
   model.unshift(p);
   openState[k] = true;
   render();

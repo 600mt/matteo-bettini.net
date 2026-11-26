@@ -13,7 +13,10 @@
      Save: "Connect folder" (Chrome / Edge) and pick the site folder: Save then
      writes index.html directly. Otherwise Save downloads a new index.html to
      put in place of the old one. Only the image-list block is rewritten; the
-     rest of index.html stays as it is on disk. ⌘Z / Ctrl+Z undoes, ⌘S saves. -->
+     rest of index.html stays as it is on disk. ⌘Z / Ctrl+Z undoes, ⌘S saves.
+     Projects bar: click a project to hide it from the site (with all its
+     carousel pictures) or show it again. That is `hidden: true` in
+     projects-data.js, which Save writes too (or downloads). -->
 <script src="projects-data.js"></script>
 <style>
   :root {
@@ -99,6 +102,20 @@
   .phones .add { margin:0; min-height:120px; }
 
   .msg { padding:40px 22px; color:var(--muted); }
+  /* projects bar: show / hide a whole project */
+  .projbar { padding:14px 22px 0; display:flex; flex-wrap:wrap; gap:6px; align-items:center; font-size:12px; }
+  .projbar .lbl { color:var(--faint); margin-right:4px; }
+  .projbar button { font:inherit; font-size:12px; color:var(--text); background:var(--panel); border:1px solid var(--line);
+                    border-radius:20px; padding:3px 10px; cursor:pointer; display:flex; gap:6px; align-items:center; }
+  .projbar button:hover { border-color:var(--accent); }
+  .projbar button .n { color:var(--faint); }
+  .projbar button.hid { color:var(--faint); border-style:dashed; }
+  .projbar button.hid .k { text-decoration:line-through; }
+  .projbar button .eye { font-size:11px; }
+  .projbar button.changed { box-shadow:0 0 0 1px var(--warn); }
+  .item.phid { opacity:.3; }
+  .item.phid .media::after { content:'project hidden'; position:absolute; left:4px; bottom:4px; font-size:10.5px; padding:0 5px;
+                             border-radius:4px; background:rgba(110,40,40,.85); color:#fff; pointer-events:none; }
 
   /* edit dialog */
   dialog { background:var(--panel); color:var(--text); border:1px solid var(--line); border-radius:10px; padding:0;
@@ -187,6 +204,38 @@ let pool = [];           // pictures to pick from
 let undoStack = [];
 let dirty = false;
 let nextId = 1;
+
+// hidden projects (hidden: true in projects-data.js)
+let projData = PROJECTS;  // projects-data.js as last read
+let projText = null;      // its text, needed to save a change
+let hidden = new Set();
+let hiddenLoaded = '';
+const hiddenKey = () => [...hidden].sort().join(',');
+const isHid = it => !!it.project && hidden.has(it.project);
+function loadProjects(text) {
+  if (text != null) {
+    try {
+      const w = {}; new Function('window', text)(w);
+      if (w.PROJECTS) { projData = w.PROJECTS; projText = text; }
+    } catch (_) {}
+  }
+  hidden = new Set(Object.keys(projData).filter(k => projData[k] && projData[k].hidden));
+  hiddenLoaded = hiddenKey();
+}
+// projects-data.js with the hidden: line of one project put in or taken out
+function setHiddenLine(text, key, on) {
+  const k = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`(\\n[ \\t]*['"]?${k}['"]?\\s*:\\s*\\{)((?:\\s*\\n[ \\t]*hidden\\s*:[^\\n]*)?)`);
+  if (!re.test(text)) throw new Error('project “' + key + '” not found in projects-data.js');
+  return text.replace(re, (_, head) => head + (on ? '\n    hidden: true,   // left out of the site, with its carousel pictures' : ''));
+}
+async function readProjects() {
+  try {
+    if (dir) return loadProjects(await (await (await dir.getFileHandle('projects-data.js')).getFile()).text());
+    const r = await fetch('projects-data.js?' + Date.now());
+    loadProjects(r.ok ? await r.text() : null);
+  } catch (_) { loadProjects(null); }
+}
 
 // desktop view settings, remembered between visits
 let deskView  = localStorage.getItem('cp-deskView') || 'strip';
@@ -330,6 +379,7 @@ function fail(why) {
 }
 async function readIndex() {
   if (dirty && !confirm('Discard the unsaved changes and read index.html again?')) return;
+  await readProjects();
   if (dir) {
     try {
       const f = await (await dir.getFileHandle('index.html')).getFile();
@@ -398,7 +448,7 @@ $('connect').onclick = async () => {
 
 /* ── editing ────────────────────────────────────────────────────── */
 
-const snapshot = () => JSON.stringify(items);
+const snapshot = () => JSON.stringify({ items, hidden: [...hidden] });
 function change(fn) {
   undoStack.push(snapshot());
   if (undoStack.length > 100) undoStack.shift();
@@ -408,8 +458,9 @@ function change(fn) {
 }
 function undo() {
   if (!undoStack.length) return;
-  items = JSON.parse(undoStack.pop());
-  setDirty(undoStack.length > 0 || buildRegion() !== loadedRegion);
+  const st = JSON.parse(undoStack.pop());
+  items = st.items; hidden = new Set(st.hidden);
+  setDirty(buildRegion() !== loadedRegion || hiddenKey() !== hiddenLoaded);
   render();
 }
 function setDirty(v) {
@@ -436,7 +487,28 @@ function move(dragId, targetId, after) {
 async function save() {
   if (!dirty) return;
   const region = buildRegion();
+  const projChanged = hiddenKey() !== hiddenLoaded;
   try {
+    if (projChanged) {
+      if (!projText) throw new Error('projects-data.js could not be read here — click Connect folder (or use the show/hide buttons in project-editor.html)');
+      let t = projText;
+      for (const k of Object.keys(projData)) if (!!(projData[k] && projData[k].hidden) !== hidden.has(k)) t = setHiddenLine(t, k, hidden.has(k));
+      if (dir) {
+        const fh = await dir.getFileHandle('projects-data.js');
+        const disk = await (await fh.getFile()).text();
+        if (disk !== projText && !confirm('projects-data.js changed on disk since it was read here. Write the show / hide changes into the version on disk?')) return;
+        if (disk !== projText) { t = disk; for (const k of hidden) t = setHiddenLine(t, k, true);
+          for (const k of Object.keys(projData)) if (!hidden.has(k)) t = setHiddenLine(t, k, false); }
+        const w = await fh.createWritable(); await w.write(t); await w.close();
+      } else {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([t], { type: 'text/javascript' }));
+        a.download = 'projects-data.js'; a.click(); URL.revokeObjectURL(a.href);
+      }
+      const keep = hidden;
+      loadProjects(t); hidden = keep; hiddenLoaded = hiddenKey();
+      if (region === loadedRegion) { undoStack = []; setDirty(false); render(); return; }
+    }
     if (dir) {
       const fh = await dir.getFileHandle('index.html');
       const disk = await (await fh.getFile()).text();
@@ -562,23 +634,34 @@ function render() {
   const off = showOff.checked;
   const forDesk = items.filter(it => (it.device === 'both' || it.device === 'desktop') && (off || !it.off));
   const forMob  = items.filter(it => (it.device === 'both' || it.device === 'mobile')  && (off || !it.off));
-  const nDesk = forDesk.filter(i => !i.off).length, nMob = forMob.filter(i => !i.off).length;
+  const live = i => !i.off && !isHid(i);
+  const nDesk = forDesk.filter(live).length, nMob = forMob.filter(live).length;
   let d = 0, m = 0;
-  const attrs = (it, sec, cls = '') => `class="${cls}item${it.off ? ' off' : ''}" draggable="true" data-id="${it.id}" data-sec="${sec}" data-src="${esc(url(isVideoSrc(it.src) ? it.poster : it.src))}"`;
+  const attrs = (it, sec, cls = '') => `class="${cls}item${it.off ? ' off' : ''}${isHid(it) ? ' phid' : ''}" draggable="true" data-id="${it.id}" data-sec="${sec}" data-src="${esc(url(isVideoSrc(it.src) ? it.poster : it.src))}"`;
 
   const desk = deskView === 'strip'
     ? `<div class="strip${stripInfo ? '' : ' no-info'}" style="--strip-w:${stripW}px">${forDesk.map(it => {
-        const n = it.off ? '–' : ++d;
+        const n = live(it) ? ++d : '–';
         return `<div ${attrs(it, 'desk')} title="${esc(`${n}. ${it.src}${it.project ? ' → ' + it.project : ''}${it.caption ? '\n' + it.caption : ''}`)}">
           <div class="media">${mediaTag(it)}<span class="num">${n}</span>${tools(it)}</div>
           <div class="info meta">${info(it)}</div></div>`;
       }).join('')}</div>`
     : forDesk.map(it => `<div ${attrs(it, 'desk', 'card ')}>
-        <div class="media">${mediaTag(it)}<span class="num">${it.off ? '–' : ++d}</span>${tools(it)}</div>
+        <div class="media">${mediaTag(it)}<span class="num">${live(it) ? ++d : '–'}</span>${tools(it)}</div>
         <div class="meta">${info(it)}</div></div>`).join('');
 
+  const keys = [...new Set([...Object.keys(projData), ...items.map(i => i.project).filter(Boolean)])];
+  const pics = k => items.filter(i => i.project === k && !i.off).length;
+  const bar = `<div class="projbar"><span class="lbl">Projects on the site — click to hide / show (with their carousel pictures):</span>${
+    keys.map(k => {
+      const h = hidden.has(k), was = !!(projData[k] && projData[k].hidden);
+      return `<button type="button" data-proj="${esc(k)}" class="${h ? 'hid' : ''}${h !== was ? ' changed' : ''}"
+        title="${esc((projData[k]?.title || k).replace(/\n/g, ' '))}${h ? ' — hidden: click to show' : ' — shown: click to hide'}${h !== was ? ' (not saved yet)' : ''}">
+        <span class="eye">${h ? '◌' : '●'}</span><span class="k">${esc(k)}</span><span class="n">${pics(k)}</span></button>`;
+    }).join('')}</div>`;
+
   out.className = '';
-  out.innerHTML = `<main>
+  out.innerHTML = bar + `<main>
     <section>
       <h2>Desktop — ${nDesk} pictures</h2>
       <p class="sub">The vertical carousel, top to bottom (it loops). Drag to move; hover for ✎ ◐ ＋ ×.</p>
@@ -594,9 +677,9 @@ function render() {
     <section>
       <h2>Mobile — ${nMob} pictures</h2>
       <p class="sub">One picture at a time, filling the screen; the first one is random. Thumbnail strip as on the phone:</p>
-      <div class="thumbs">${forMob.filter(i => !i.off).map(it => `<img src="${url(isVideoSrc(it.src) ? it.poster : it.src)}" alt="">`).join('')}</div>
+      <div class="thumbs">${forMob.filter(live).map(it => `<img src="${url(isVideoSrc(it.src) ? it.poster : it.src)}" alt="">`).join('')}</div>
       <div class="phones">${forMob.map(it => `<div ${attrs(it, 'mob', 'card ')}>
-        <div class="media phone" style="background-image:url('${url(isVideoSrc(it.src) ? it.poster : it.src)}')"><span class="num">${it.off ? '–' : ++m}</span>${tools(it)}</div>
+        <div class="media phone" style="background-image:url('${url(isVideoSrc(it.src) ? it.poster : it.src)}')"><span class="num">${live(it) ? ++m : '–'}</span>${tools(it)}</div>
         <div class="meta">${info(it)}</div></div>`).join('')}
         <button type="button" class="add" data-add="mobile">+ Add picture to mobile</button></div>
     </section>
@@ -629,6 +712,8 @@ function render() {
 /* ── clicks and dragging on the lists ───────────────────────────── */
 
 out.addEventListener('click', e => {
+  const pb = e.target.closest('[data-proj]');
+  if (pb) return change(() => { const k = pb.dataset.proj; hidden.has(k) ? hidden.delete(k) : hidden.add(k); });
   const add = e.target.closest('[data-add]');
   if (add) return openDialog({ device: add.dataset.add });
   const b = e.target.closest('.tools button');
