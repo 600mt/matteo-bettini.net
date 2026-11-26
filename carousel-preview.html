@@ -16,7 +16,9 @@
      rest of index.html stays as it is on disk. ⌘Z / Ctrl+Z undoes, ⌘S saves.
      Projects bar: click a project to hide it from the site (with all its
      carousel pictures) or show it again. That is `hidden: true` in
-     projects-data.js, which Save writes too (or downloads). -->
+     projects-data.js, which Save writes too (or downloads). The Panels
+     button switches all project side panels off / on for the whole site
+     (window.PROJECT_PANELS in projects-data.js), saved the same way. -->
 <script src="projects-data.js"></script>
 <style>
   :root {
@@ -147,6 +149,7 @@
   <span class="src dirty" id="dirtyBadge" hidden>unsaved changes</span>
   <label class="chk"><input type="checkbox" id="showOff"> show commented-out</label>
   <span class="spacer"></span>
+  <button class="btn small" id="panelsBtn" title="Side panels on the site: whether clicking a carousel picture opens its project">Panels: on</button>
   <button class="btn small" id="undo" disabled title="⌘Z">Undo</button>
   <button class="btn small" id="connect" hidden>Connect folder</button>
   <button class="btn small" id="reload">Reload</button>
@@ -210,13 +213,15 @@ let projData = PROJECTS;  // projects-data.js as last read
 let projText = null;      // its text, needed to save a change
 let hidden = new Set();
 let hiddenLoaded = '';
+let panelsOn = window.PROJECT_PANELS !== false, panelsLoaded = panelsOn;   // window.PROJECT_PANELS
 const hiddenKey = () => [...hidden].sort().join(',');
+const projDirty = () => hiddenKey() !== hiddenLoaded || panelsOn !== panelsLoaded;
 const isHid = it => !!it.project && hidden.has(it.project);
 function loadProjects(text) {
   if (text != null) {
     try {
       const w = {}; new Function('window', text)(w);
-      if (w.PROJECTS) { projData = w.PROJECTS; projText = text; }
+      if (w.PROJECTS) { projData = w.PROJECTS; projText = text; panelsOn = panelsLoaded = w.PROJECT_PANELS !== false; }
     } catch (_) {}
   }
   hidden = new Set(Object.keys(projData).filter(k => projData[k] && projData[k].hidden));
@@ -228,6 +233,19 @@ function setHiddenLine(text, key, on) {
   const re = new RegExp(`(\\n[ \\t]*['"]?${k}['"]?\\s*:\\s*\\{)((?:\\s*\\n[ \\t]*hidden\\s*:[^\\n]*)?)`);
   if (!re.test(text)) throw new Error('project “' + key + '” not found in projects-data.js');
   return text.replace(re, (_, head) => head + (on ? '\n    hidden: true,   // left out of the site, with its carousel pictures' : ''));
+}
+// projects-data.js with window.PROJECT_PANELS set
+function setPanelsLine(text, on) {
+  const line = `window.PROJECT_PANELS = ${on};   // false: clicking a carousel picture opens no side panel (all panels off)`;
+  if (/^window\.PROJECT_PANELS\s*=.*$/m.test(text)) return text.replace(/^window\.PROJECT_PANELS\s*=.*$/m, line);
+  if (!/^window\.PROJECTS\s*=/m.test(text)) throw new Error('no window.PROJECTS in projects-data.js');
+  return text.replace(/^window\.PROJECTS\s*=/m, line + '\n\nwindow.PROJECTS =');
+}
+function paintPanels() {
+  const b = $('panelsBtn');
+  b.textContent = panelsOn ? 'Panels: on' : 'Panels: OFF';
+  b.style.color = panelsOn ? '' : 'var(--danger)';
+  b.style.boxShadow = panelsOn !== panelsLoaded ? '0 0 0 1px var(--warn)' : '';
 }
 async function readProjects() {
   try {
@@ -448,7 +466,7 @@ $('connect').onclick = async () => {
 
 /* ── editing ────────────────────────────────────────────────────── */
 
-const snapshot = () => JSON.stringify({ items, hidden: [...hidden] });
+const snapshot = () => JSON.stringify({ items, hidden: [...hidden], panelsOn });
 function change(fn) {
   undoStack.push(snapshot());
   if (undoStack.length > 100) undoStack.shift();
@@ -459,8 +477,8 @@ function change(fn) {
 function undo() {
   if (!undoStack.length) return;
   const st = JSON.parse(undoStack.pop());
-  items = st.items; hidden = new Set(st.hidden);
-  setDirty(buildRegion() !== loadedRegion || hiddenKey() !== hiddenLoaded);
+  items = st.items; hidden = new Set(st.hidden); panelsOn = st.panelsOn;
+  setDirty(buildRegion() !== loadedRegion || projDirty());
   render();
 }
 function setDirty(v) {
@@ -487,26 +505,28 @@ function move(dragId, targetId, after) {
 async function save() {
   if (!dirty) return;
   const region = buildRegion();
-  const projChanged = hiddenKey() !== hiddenLoaded;
+  const projChanged = projDirty();
   try {
     if (projChanged) {
       if (!projText) throw new Error('projects-data.js could not be read here — click Connect folder (or use the show/hide buttons in project-editor.html)');
       let t = projText;
       for (const k of Object.keys(projData)) if (!!(projData[k] && projData[k].hidden) !== hidden.has(k)) t = setHiddenLine(t, k, hidden.has(k));
+      if (panelsOn !== panelsLoaded) t = setPanelsLine(t, panelsOn);
       if (dir) {
         const fh = await dir.getFileHandle('projects-data.js');
         const disk = await (await fh.getFile()).text();
         if (disk !== projText && !confirm('projects-data.js changed on disk since it was read here. Write the show / hide changes into the version on disk?')) return;
         if (disk !== projText) { t = disk; for (const k of hidden) t = setHiddenLine(t, k, true);
-          for (const k of Object.keys(projData)) if (!hidden.has(k)) t = setHiddenLine(t, k, false); }
+          for (const k of Object.keys(projData)) if (!hidden.has(k)) t = setHiddenLine(t, k, false);
+          t = setPanelsLine(t, panelsOn); }
         const w = await fh.createWritable(); await w.write(t); await w.close();
       } else {
         const a = document.createElement('a');
         a.href = URL.createObjectURL(new Blob([t], { type: 'text/javascript' }));
         a.download = 'projects-data.js'; a.click(); URL.revokeObjectURL(a.href);
       }
-      const keep = hidden;
-      loadProjects(t); hidden = keep; hiddenLoaded = hiddenKey();
+      const keep = hidden, keepP = panelsOn;
+      loadProjects(t); hidden = keep; hiddenLoaded = hiddenKey(); panelsOn = panelsLoaded = keepP;
       if (region === loadedRegion) { undoStack = []; setDirty(false); render(); return; }
     }
     if (dir) {
@@ -631,6 +651,7 @@ const mediaTag = it => isVideoSrc(it.src)
   : `<img src="${url(it.src)}" alt="" draggable="false">`;
 
 function render() {
+  paintPanels();
   const off = showOff.checked;
   const forDesk = items.filter(it => (it.device === 'both' || it.device === 'desktop') && (off || !it.off));
   const forMob  = items.filter(it => (it.device === 'both' || it.device === 'mobile')  && (off || !it.off));
@@ -780,6 +801,7 @@ $('fileInput').onchange = e => {
 };
 $('save').onclick = save;
 $('undo').onclick = undo;
+$('panelsBtn').onclick = () => change(() => { panelsOn = !panelsOn; });
 showOff.onchange = () => items.length && render();
 document.addEventListener('keydown', e => {
   if ($('dlg').open) return;

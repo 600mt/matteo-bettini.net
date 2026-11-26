@@ -255,6 +255,7 @@
     <button class="btn ghost small" id="collapseAll">Collapse all</button>
     <button class="btn" id="openFile">Open file…</button>
     <input type="file" id="fileInput" accept=".js,text/javascript" style="display:none">
+    <button class="btn" id="panelsBtn" title="Side panels on the site: whether clicking a carousel picture opens its project"></button>
     <button class="btn" id="addProject">+ Project</button>
     <button class="btn primary" id="download">Download .js</button>
   </span>
@@ -403,6 +404,7 @@ const countLabel = p => textCount(p) + ' txt · ' + imgCount(p) + ' img';
 
 // Source priority: a projects-data.js loaded next to this file wins; otherwise the embedded snapshot.
 let model, dataSource;
+let panelsOn = window.PROJECT_PANELS !== false;   // window.PROJECT_PANELS in the file
 if (window.__AUTOLOAD_FROM_FILE && window.PROJECTS && typeof window.PROJECTS === 'object') {
   model = toModel(window.PROJECTS);
   dataSource = 'file';
@@ -906,6 +908,8 @@ function serialize() {
 //             related-work buttons) without deleting it.
 // \`body\` and \`images\` are generated from \`content\` for pages that still read them.
 //   Edit \`content\` (or use project-editor.html) — not these two.
+window.PROJECT_PANELS = ${panelsOn ? 'true' : 'false'};   // false: clicking a carousel picture opens no side panel (all panels off)
+
 window.PROJECTS = {
 `;
 
@@ -963,6 +967,19 @@ document.getElementById('download').addEventListener('click', () => {
   toast('Downloaded projects-data.js', 'ok');
 });
 
+// site-wide switch: side panels on / off
+function paintPanels() {
+  const b = document.getElementById('panelsBtn');
+  b.textContent = panelsOn ? 'Panels: on' : 'Panels: OFF';
+  b.style.color = panelsOn ? '' : 'var(--danger)';
+  b.style.borderColor = panelsOn ? '' : '#4a3232';
+}
+document.getElementById('panelsBtn').addEventListener('click', () => {
+  panelsOn = !panelsOn; paintPanels();
+  toast(panelsOn ? 'Panels on — download the .js to apply' : 'Panels off: clicking a picture opens nothing — download the .js to apply');
+});
+paintPanels();
+
 function updateSourceBadge() {
   const b = document.getElementById('srcBadge');
   if (dataSource === 'file') { b.textContent = 'loaded from file'; b.className = 'src file'; }
@@ -978,6 +995,8 @@ function parseProjectsJS(text) {
   // Provide both `window` and a bare `PROJECTS` capture path.
   const fn = new Function('window', '"use strict";\n' + text + '\n;return window.PROJECTS;');
   const result = fn(sandboxWin);
+  panelsOn = sandboxWin.PROJECT_PANELS !== false;
+  paintPanels();
   if (!result || typeof result !== 'object') {
     throw new Error('No window.PROJECTS object found in that file.');
   }

@@ -879,6 +879,10 @@
 <script src="archive-data.js"></script>
 <script>
 const PROJECTS = window.PROJECTS;
+/* side panels on / off for the whole site (window.PROJECT_PANELS in
+   projects-data.js — the Panels switch in project-editor.html or
+   carousel-preview.html). Off: clicking a picture opens nothing. */
+const PANELS_ON = window.PROJECT_PANELS !== false;
 
 /* hidden projects (hidden: true in projects-data.js — the eye toggle in
    project-editor.html or carousel-preview.html): the site leaves them out,
@@ -1246,6 +1250,7 @@ function escHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').r
 function archiveIsOpen() { return document.body.classList.contains('archive-open'); }
 
 function openPanel(projectId) {
+  if (!PANELS_ON) return;
   if (document.body.classList.contains('archive-open')) closeArchive();   // one panel at a time
   const p = PROJECTS[projectId];
   if (!p) return;
@@ -1658,8 +1663,8 @@ const ownWrappers = [...imageList.querySelectorAll('.image-wrapper')].filter(w =
   const d = w.dataset.device || 'both';
   return d === 'both' || (d === 'mobile' && isMobile) || (d === 'desktop' && !isMobile);
 });
-ownWrappers.forEach(w => { if (w.dataset.project) w.classList.add('has-project'); });
-// to disable the panels
+// (with the panels off, nothing is clickable: no pointer, no prefetch)
+if (PANELS_ON) ownWrappers.forEach(w => { if (w.dataset.project) w.classList.add('has-project'); });
 
 function duplicateMain() {
   const clone = imageList.cloneNode(true);

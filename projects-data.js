@@ -11,6 +11,8 @@
 //             related-work buttons) without deleting it.
 // `body` and `images` are generated from `content` for pages that still read them.
 //   Edit `content` (or use project-editor.html) — not these two.
+window.PROJECT_PANELS = true;   // false: clicking a carousel picture opens no side panel (all panels off)
+
 window.PROJECTS = {
 
   'dae-catalogue': {
